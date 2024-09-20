@@ -1,0 +1,1 @@
+ https://github.com/rlogiacco/BatterySense?tab=readme-ov-file
