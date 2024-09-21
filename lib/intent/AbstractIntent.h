@@ -4,7 +4,6 @@
 #pragma once
 
 #include <Arduino.h>
-#include <GxEPD2_BW.h>
 
 struct AbstractIntent {
 

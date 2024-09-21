@@ -1,10 +1,10 @@
-#include "box.h"
+#include "Box.h"
 
 Box::Box(
-    const uint16_t topLeftCornerX,
-    const uint16_t topLeftCornerY,
-    const uint8_t width,
-    const uint8_t height,
+    const int16_t topLeftCornerX,
+    const int16_t topLeftCornerY,
+    const uint16_t width,
+    const uint16_t height,
     const uint8_t padding,
     const uint8_t border
 ) : topLeftCornerX(topLeftCornerX),
@@ -17,32 +17,32 @@ Box::Box(
     
 }
 
-uint16_t Box::x()
+int16_t Box::x()
 {
-    return 0;
+    return topLeftCornerX;
 }
 
-uint16_t Box::y()
+int16_t Box::y()
 {
-    return 0;
+    return topLeftCornerY;
 }
 
-uint8_t Box::wdth()
+uint16_t Box::wdth()
 {
-    return 0;
+    return width;
 }
 
-uint8_t Box::hght()
+uint16_t Box::hght()
 {
-    return 0;
+    return height;
 }
 
 uint8_t Box::pad()
 {
-    return 0;
+    return padding;
 }
 
 uint8_t Box::brd()
 {
-    return 0;
+    return border;
 }

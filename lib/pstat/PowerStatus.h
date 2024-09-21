@@ -12,7 +12,8 @@ struct PowerStatus
 {
     private:
         const uint8_t VOLTAGE_DIVIDER_RAITO = 2;
-        const uint16_t REF_VOLTAGE_MILLIVOLTS = 3300;
+        const uint16_t REF_VOLTAGE_MILLIVOLTS = 4200;
+        const uint8_t ADC_RESOLUTION = 12;
 
         Battery battery;
         uint8_t powerSensePin;

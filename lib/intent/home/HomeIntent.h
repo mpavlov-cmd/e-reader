@@ -23,7 +23,8 @@ struct HomeIntent : public AbstractDisplayIntent
         DateTimeRtc dt = DateTimeRtc();
         uint16_t clockBoxXY[6][2] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
         int16_t tbx, tby;
-        uint16_t tbw, tbh, framew, frameh;
+        uint16_t tbw, tbh, framew, frameh, startX, startY, totalW, totalH;
+        
 
         void initClockCoordinates();
 

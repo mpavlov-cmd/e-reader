@@ -2,6 +2,7 @@
 #define ABSTRACTDISPLAYINTENT_H
 
 #include <AbstractIntent.h>
+#include <GxEPD2_BW.h>
 
 struct AbstractDisplayIntent : public AbstractIntent
 {

@@ -26,7 +26,7 @@ void HomeIntent::onStartUp()
 
 void HomeIntent::onFrequncy(uint32_t freqMills)
 {
-    display.setPartialWindow(0, 0, display.width(), display.height());
+    display.setPartialWindow(startX, startY, totalW, totalH);
 
 	dt.setValue(espTime.getHour(), IDX_HOUR);
 	dt.setValue(espTime.getMinute(), IDX_MIN);
@@ -78,11 +78,11 @@ void HomeIntent::initClockCoordinates()
 
     uint8_t numBoxes = 6;
 
-	uint16_t totalW = framew * numBoxes + CLOCK_PADDING * (numBoxes - 1) + CLOCK_EXTRA_PADDING;
-	uint16_t totalH = frameh;
+	totalW = framew * numBoxes + CLOCK_PADDING * (numBoxes - 1) + CLOCK_EXTRA_PADDING;
+	totalH = frameh;
 
-	uint16_t startX = ((display.width() - totalW) / 2) - 0;
-	uint16_t startY = ((display.height() - totalH) / 2) - 0;
+	startX = ((display.width() - totalW) / 2) - 0;
+	startY = ((display.height() - totalH) / 2) - 0;
 
 	uint16_t cursor = startX;
 	for (uint8_t i = 0; i < numBoxes; i++)

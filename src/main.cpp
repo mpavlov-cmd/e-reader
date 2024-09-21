@@ -8,11 +8,12 @@
 
 #include <GxEPD2_BW.h>
 #include <GxEPD2_display_selection_new_style.h>
-#include <Fonts/FreeSans18pt7b.h>
+#include <Fonts/FreeSans9pt7b.h>
 
 #include <DateTimeRtc.h>
 #include <home/HomeIntent.h>
 #include <PowerStatus.h>
+#include <powerindicator/PowerIndicator.h>
 
 #define PIN_LED GPIO_NUM_25      // LED
 #define PIN_POWR_DET GPIO_NUM_34 // CHECK IF HAS EXTERNAL POWER  
@@ -24,7 +25,7 @@ const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
 
 // put function declarations here
 // void helloWorld();
-void initDisplay(const uint8_t textSize);
+void initDisplay();
 void blink(void *pvParameters);
 void powerBatteryStatus(void *pvParameters);
 
@@ -33,10 +34,10 @@ void powerBatteryStatus(void *pvParameters);
 // var declarations 
 ESP32Time rtc(0);
 PowerStatus powerStatus(PIN_POWR_DET, PIN_CHG_STAT, PIN_BAT_STAT, BAT_V_MIN_MILLIVOLTS, BAT_V_MAX_MILLIVOLTS);
-boolean powerOn;
 
 // static uint8_t homeIntentBuffer[sizeof(HomeIntent)];
 HomeIntent* homeIntent = nullptr;
+PowerIndicator* powerInd = nullptr;
 
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
@@ -49,15 +50,11 @@ void setup()
   	}
 	Serial.println("-------- BOOT SUCCESS --------");
 
-	// Init LED
-	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
-	xTaskCreate(powerBatteryStatus, "powerBatteryStatus", 1000, NULL, 5, NULL);
-
 	// Set Time
-	rtc.setTime(0, 0, 12, 15, 9, 2024);
+	rtc.setTime(0, 0, 0, 15, 9, 2024);
 
 	// Init Display
-	initDisplay(1);
+	initDisplay();
 
 	// HomeIntent homeIntent(display, rtc);
 	// homeIntent.onStartUp();
@@ -65,9 +62,13 @@ void setup()
 	// homeIntent->~HomeInetnt();
 	// homeIntent = nullptr;
 	homeIntent = new HomeIntent(display, rtc);
-	// homeIntent = new HomeIntent(display, rtc);
 	homeIntent->onStartUp();
 
+	// Power Indicator 
+	powerInd = new PowerIndicator(display, powerStatus);
+
+	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
+	// xTaskCreate(powerBatteryStatus, "powerBatteryStatus", 1000, NULL, 5, NULL);
 	// Sleep
 	// display.hibernate();
 }
@@ -75,16 +76,18 @@ void setup()
 void loop()
 {
 	homeIntent->onFrequncy(10);
+	powerInd->refresh();
+
 }
 
-void initDisplay(const uint8_t textSize)
+void initDisplay()
 {
 	// USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
 	display.init(115200, true, 2, false); 
 
 	display.setRotation(3);
-	display.setFont(&FreeSans18pt7b);
-	display.setTextSize(textSize);
+	display.setFont(&FreeSans9pt7b);
+	display.setTextSize(1);
 	display.setTextColor(GxEPD_BLACK);
 
 	display.setFullWindow();
@@ -100,6 +103,7 @@ void initDisplay(const uint8_t textSize)
 
 
 void blink(void *pvParameters) {
+	pinMode(PIN_LED, OUTPUT);
 	for (;;) {
 		digitalWrite(PIN_LED, HIGH);
 		vTaskDelay(250 / portTICK_RATE_MS);

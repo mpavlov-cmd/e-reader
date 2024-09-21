@@ -7,14 +7,22 @@ PowerStatus::PowerStatus(
     uint8_t batterySensePin,
     uint16_t minVoltage,
     uint16_t maxVoltage) : 
-        battery(minVoltage, maxVoltage, batterySensePin),
+        battery(minVoltage, maxVoltage, batterySensePin, ADC_RESOLUTION),
         powerSensePin(powerSensePin), 
         chargeStatusPin(chargeStatusPin)
 {
     pinMode(powerSensePin, INPUT);
     pinMode(chargeStatusPin, INPUT);
 
-    battery.begin(REF_VOLTAGE_MILLIVOLTS, VOLTAGE_DIVIDER_RAITO, &sigmoidal);
+    delay(1000);
+    Serial.println("---------CONFIG------------ MIN, MAX, REF");
+    Serial.println(minVoltage);
+    Serial.println(maxVoltage);
+    Serial.println(REF_VOLTAGE_MILLIVOLTS);
+
+    // Set 12 bit ADC resolution
+    analogReadResolution(ADC_RESOLUTION);
+    battery.begin(REF_VOLTAGE_MILLIVOLTS, VOLTAGE_DIVIDER_RAITO, &asigmoidal);
 }
 
 boolean PowerStatus::getConnected()
@@ -24,6 +32,11 @@ boolean PowerStatus::getConnected()
 
 uint8_t PowerStatus::getBatteryLevelPercent()
 {
+    Serial.println("---------Voltage and Level--------");
+    Serial.println(analogRead(GPIO_NUM_36));
+    Serial.println(battery.voltage());
+    Serial.println(battery.level());
+
     return battery.level();
 }
 
