@@ -8,5 +8,6 @@
 - [ ] Optionally enable power sense circuit on demand
 
 ## WIKI
- https://github.com/rlogiacco/BatterySense?tab=readme-ov-file
-
+ - [Battery Sense](https://github.com/rlogiacco/BatterySense?tab=readme-ov-file)
+ - [Material Icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.size=24&icon.color=%235f6368)
+ - [PNG to GIF](https://cloudconvert.com/png-to-gif)

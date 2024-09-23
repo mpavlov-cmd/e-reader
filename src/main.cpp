@@ -19,6 +19,7 @@
 #define PIN_POWR_DET GPIO_NUM_34 // CHECK IF HAS EXTERNAL POWER  
 #define PIN_BAT_STAT GPIO_NUM_36 // ANALOG BATTEY PERCENT 
 #define PIN_CHG_STAT GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
+#define PIN_CHG_ON   GPIO_NUM_15 // Set HIGH TO ENABLE CHARGER
 
 const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
 const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
@@ -33,22 +34,24 @@ void powerBatteryStatus(void *pvParameters);
 
 // var declarations 
 ESP32Time rtc(0);
-PowerStatus powerStatus(PIN_POWR_DET, PIN_CHG_STAT, PIN_BAT_STAT, BAT_V_MIN_MILLIVOLTS, BAT_V_MAX_MILLIVOLTS);
+PowerStatus powerStatus(PIN_POWR_DET, PIN_CHG_STAT, PIN_BAT_STAT, PIN_CHG_ON);
 
 // static uint8_t homeIntentBuffer[sizeof(HomeIntent)];
-HomeIntent* homeIntent = nullptr;
-PowerIndicator* powerInd = nullptr;
+// HomeIntent* homeIntent = nullptr;
+// PowerIndicator* powerInd = nullptr;
 
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
 void setup()
 {
-	// put your setup code here, to run once:
 	Serial.begin(115200);
 	while (!Serial) {
     	; // wait for serial port to connect.
   	}
 	Serial.println("-------- BOOT SUCCESS --------");
+
+	// Indicate that I'm alive
+	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
 
 	// Set Time
 	rtc.setTime(0, 0, 0, 15, 9, 2024);
@@ -61,23 +64,26 @@ void setup()
 	// To de-allocate memory use:
 	// homeIntent->~HomeInetnt();
 	// homeIntent = nullptr;
-	homeIntent = new HomeIntent(display, rtc);
-	homeIntent->onStartUp();
+	HomeIntent homeIntent(display, rtc);
+	homeIntent.onStartUp();
 
 	// Power Indicator 
-	powerInd = new PowerIndicator(display, powerStatus);
+	PowerIndicator powerInd(display, powerStatus);
 
-	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
+	
 	// xTaskCreate(powerBatteryStatus, "powerBatteryStatus", 1000, NULL, 5, NULL);
 	// Sleep
 	// display.hibernate();
+
+	for (;;) {
+		homeIntent.onFrequncy(10);
+		powerInd.refresh();
+	}
 }
 
 void loop()
 {
-	homeIntent->onFrequncy(10);
-	powerInd->refresh();
-
+	// powerInd->refresh();
 }
 
 void initDisplay()

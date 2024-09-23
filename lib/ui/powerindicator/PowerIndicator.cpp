@@ -1,4 +1,6 @@
 #include "PowerIndicator.h"
+#include <bolt.c> 
+#include <plug.c> 
 
 PowerIndicator::PowerIndicator(
     GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display,
@@ -9,7 +11,9 @@ PowerIndicator::PowerIndicator(
     uint16_t width, height, batteryStart;
     
     // Init battery percentage box in the top right corner
-    display.getTextBounds(PERCENT_LENGTH, 0, 0, &x, &y, &width, &height);
+    display.getTextBounds(PERCENT_TEXT, 0, 0, &x, &y, &width, &height);
+    height++;
+
     uint16_t batteryBoxStartX = display.width() - width;
     batteryBox = new Box(batteryBoxStartX, 0, width, height, 0, 0);
 
@@ -17,59 +21,44 @@ PowerIndicator::PowerIndicator(
     uint16_t pluggedBoxStartX = batteryBoxStartX - ICON_W - 1;
     pluggedBox = new Box(pluggedBoxStartX, 0, ICON_W, height, 0, 0);
 
-    // Init Charging Icon
-    uint16_t chargingBoxStartX = pluggedBoxStartX - ICON_W - 1;
-    chargeingBox = new Box(chargingBoxStartX, 0, ICON_W, height, 0, 0);
-
-    widgetTotalWidth = display.width() - chargingBoxStartX;
-    widgetStartX = chargingBoxStartX;
+    widgetTotalWidth = display.width() - pluggedBoxStartX;
+    widgetStartX = pluggedBoxStartX;
 }
 
 void PowerIndicator::refresh()
 {
-
-    // Serial.println("-------------");
-    // Serial.println(batteryBox->x());
-    // Serial.println(batteryBox->y());
-    // Serial.println(batteryBox->wdth());
-    // Serial.println(batteryBox->hght());
-
-    // Serial.println("------- Widget -------");
-    // Serial.println(widgetStartX);
-    // Serial.println(widgetTotalWidth);
-
 
     display.setPartialWindow(widgetStartX, 0, widgetTotalWidth, batteryBox->hght());
     do {
         // Clear display
         display.fillRect(widgetStartX, 0, widgetTotalWidth, batteryBox->hght(), GxEPD_WHITE);
 
-        // Draew Icon If charging
-        if (powerStatus.getChargingStatus() == CHARGING) {
-            Serial.println("---------IN CHARGING ----------");
-            display.fillRect(
-                chargeingBox->x(),
-                chargeingBox->y(),
-                chargeingBox->wdth(),
-                chargeingBox->hght(),
-                GxEPD_BLACK
-            );
-        }
-
         // Draew Icon If connected
         if (powerStatus.getConnected()) {
+            
+            // Only show charging when connected, chargeAllowed and charging
+            const unsigned char* icon = gImage_plug;
+            if (powerStatus.getChageEnabled() && powerStatus.getChargingStatus() == CHARGING) {
+                icon = gImage_bolt;
+            }
+
             Serial.println("---------IN CONNECTED ----------");
-            display.fillRect(
+            display.drawBitmap(
                 pluggedBox->x(),
                 pluggedBox->y(),
+                icon,
                 pluggedBox->wdth(),
-                pluggedBox->hght(),
+                12,
                 GxEPD_BLACK
             );
         }
 
-        display.setCursor(batteryBox->x(), 0 + batteryBox->hght());
-        display.print(powerStatus.getBatteryLevelPercent());
+        char resultBuffer[5]; // 3 for the number, 1 for %, and 1 for null terminator
+        uint8_t levelPercent = powerStatus.getBatteryLevelPercent();
+        snprintf(resultBuffer, sizeof(resultBuffer), "%3d%%", levelPercent);
+
+        display.setCursor(batteryBox->x(), 0 + batteryBox->hght() - 1);
+        display.print(resultBuffer);
 
     } while (display.nextPage());
 }

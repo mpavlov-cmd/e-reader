@@ -5,24 +5,26 @@ PowerStatus::PowerStatus(
     uint8_t powerSensePin,
     uint8_t chargeStatusPin,
     uint8_t batterySensePin,
-    uint16_t minVoltage,
-    uint16_t maxVoltage) : 
-        battery(minVoltage, maxVoltage, batterySensePin, ADC_RESOLUTION),
+    uint8_t chargeEnablePin
+) : 
+        battery(VOLTAGE_MIN_MILLIVOLTS, VOLTAGE_MAX_MILLIVOLTS, batterySensePin, ADC_RESOLUTION),
         powerSensePin(powerSensePin), 
-        chargeStatusPin(chargeStatusPin)
+        chargeStatusPin(chargeStatusPin),
+        chargeEnablePin(chargeEnablePin)
 {
     pinMode(powerSensePin, INPUT);
     pinMode(chargeStatusPin, INPUT);
-
-    delay(1000);
-    Serial.println("---------CONFIG------------ MIN, MAX, REF");
-    Serial.println(minVoltage);
-    Serial.println(maxVoltage);
-    Serial.println(REF_VOLTAGE_MILLIVOLTS);
+    pinMode(chargeEnablePin, OUTPUT);
+    digitalWrite(chargeEnablePin, HIGH);
 
     // Set 12 bit ADC resolution
     analogReadResolution(ADC_RESOLUTION);
-    battery.begin(REF_VOLTAGE_MILLIVOLTS, VOLTAGE_DIVIDER_RAITO, &asigmoidal);
+    battery.begin(VOLTAGE_REF_MILLIVOLTS, VOLTAGE_DIVIDER_RAITO, &asigmoidal);
+}
+
+boolean PowerStatus::getChageEnabled()
+{
+    return digitalRead(chargeEnablePin) == HIGH;
 }
 
 boolean PowerStatus::getConnected()
@@ -44,4 +46,10 @@ uint8_t PowerStatus::getBatteryLevelPercent()
 ChargeingStatus PowerStatus::getChargingStatus()
 {
     return digitalRead(chargeStatusPin) == LOW ? CHARGING : FULL;
+}
+
+void PowerStatus::allowCharge(boolean chargeAllowed)
+{
+    uint8_t highOrLow = chargeAllowed == true ? HIGH : LOW;
+    digitalWrite(chargeEnablePin, highOrLow);
 }

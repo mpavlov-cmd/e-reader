@@ -11,8 +11,8 @@
 struct PowerIndicator
 {
     private:
-        const char PERCENT_LENGTH[5] = "100%";
-        const uint8_t ICON_W = 13;
+        const char PERCENT_TEXT[5] = "100%";
+        const uint8_t ICON_W = 20;
          
 
         GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display;
