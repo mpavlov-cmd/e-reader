@@ -34,7 +34,7 @@ void powerBatteryStatus(void *pvParameters);
 
 // var declarations 
 ESP32Time rtc(0);
-PowerStatus powerStatus(PIN_POWR_DET, PIN_CHG_STAT, PIN_BAT_STAT, PIN_CHG_ON);
+PowerStatus powerStatus(rtc, PIN_POWR_DET, PIN_CHG_STAT, PIN_BAT_STAT, PIN_CHG_ON);
 
 // static uint8_t homeIntentBuffer[sizeof(HomeIntent)];
 // HomeIntent* homeIntent = nullptr;
@@ -65,7 +65,7 @@ void setup()
 	// homeIntent->~HomeInetnt();
 	// homeIntent = nullptr;
 	HomeIntent homeIntent(display, rtc);
-	homeIntent.onStartUp();
+	// homeIntent.onStartUp();
 
 	// Power Indicator 
 	PowerIndicator powerInd(display, powerStatus);

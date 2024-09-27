@@ -19,7 +19,7 @@ PowerIndicator::PowerIndicator(
 
     // Init Power Icon 
     uint16_t pluggedBoxStartX = batteryBoxStartX - ICON_W - 1;
-    pluggedBox = new Box(pluggedBoxStartX, 0, ICON_W, height, 0, 0);
+    pluggedBox = new Box(pluggedBoxStartX, 1, ICON_W, height, 0, 0);
 
     widgetTotalWidth = display.width() - pluggedBoxStartX;
     widgetStartX = pluggedBoxStartX;
@@ -28,10 +28,12 @@ PowerIndicator::PowerIndicator(
 void PowerIndicator::refresh()
 {
 
-    display.setPartialWindow(widgetStartX, 0, widgetTotalWidth, batteryBox->hght());
+    // display.setPartialWindow(widgetStartX, 0, widgetTotalWidth, batteryBox->hght());
+    display.setPartialWindow(0, 0, display.width(), batteryBox->hght());
     do {
         // Clear display
-        display.fillRect(widgetStartX, 0, widgetTotalWidth, batteryBox->hght(), GxEPD_WHITE);
+        // display.fillRect(widgetStartX, 0, widgetTotalWidth, batteryBox->hght(), GxEPD_WHITE);
+        display.fillRect(0, 0, display.width(), batteryBox->hght(), GxEPD_WHITE);
 
         // Draew Icon If connected
         if (powerStatus.getConnected()) {
@@ -59,6 +61,12 @@ void PowerIndicator::refresh()
 
         display.setCursor(batteryBox->x(), 0 + batteryBox->hght() - 1);
         display.print(resultBuffer);
+
+        display.setCursor(0, 0 + batteryBox->hght() - 1);
+        display.print(powerStatus.getBatteryVoltage());
+
+        display.setCursor(50, 0 + batteryBox->hght() - 1);
+        display.print(powerStatus.getVoltageDuringMeasuring());
 
     } while (display.nextPage());
 }
