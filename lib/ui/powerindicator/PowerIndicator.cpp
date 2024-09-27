@@ -44,7 +44,6 @@ void PowerIndicator::refresh()
                 icon = gImage_bolt;
             }
 
-            Serial.println("---------IN CONNECTED ----------");
             display.drawBitmap(
                 pluggedBox->x(),
                 pluggedBox->y(),

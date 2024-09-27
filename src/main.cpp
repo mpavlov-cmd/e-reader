@@ -3,8 +3,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "SD.h"
+#include "FS.h"
+
 #include <ESP32Time.h>
-#include <Battery.h>
 
 #include <GxEPD2_BW.h>
 #include <GxEPD2_display_selection_new_style.h>
@@ -14,12 +16,15 @@
 #include <home/HomeIntent.h>
 #include <PowerStatus.h>
 #include <powerindicator/PowerIndicator.h>
+#include <Battery.h>
+#include <FileManager.h>
 
 #define PIN_LED GPIO_NUM_25      // LED
 #define PIN_POWR_DET GPIO_NUM_34 // CHECK IF HAS EXTERNAL POWER  
 #define PIN_BAT_STAT GPIO_NUM_36 // ANALOG BATTEY PERCENT 
 #define PIN_CHG_STAT GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
 #define PIN_CHG_ON   GPIO_NUM_15 // Set HIGH TO ENABLE CHARGER
+#define PIN_CS_SD    GPIO_NUM_26 // SD Schip Select
 
 const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
 const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
@@ -28,13 +33,13 @@ const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
 // void helloWorld();
 void initDisplay();
 void blink(void *pvParameters);
-void powerBatteryStatus(void *pvParameters);
 
 // put constant definitions here
 
 // var declarations 
 ESP32Time rtc(0);
 PowerStatus powerStatus(rtc, PIN_POWR_DET, PIN_CHG_STAT, PIN_BAT_STAT, PIN_CHG_ON);
+FileManager fileManager(PIN_CS_SD);
 
 // static uint8_t homeIntentBuffer[sizeof(HomeIntent)];
 // HomeIntent* homeIntent = nullptr;
@@ -58,6 +63,11 @@ void setup()
 
 	// Init Display
 	initDisplay();
+	
+	// SPI Is initialized by the display
+	fileManager.begin();
+	fileManager.listDir("/", 0);
+	fileManager.readFile("/Test.txt");
 
 	// HomeIntent homeIntent(display, rtc);
 	// homeIntent.onStartUp();
@@ -89,7 +99,8 @@ void loop()
 void initDisplay()
 {
 	// USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-	display.init(115200, true, 2, false); 
+	// use serial_diag_bitrate = 115200 for logging
+	display.init(0, true, 2, false); 
 
 	display.setRotation(3);
 	display.setFont(&FreeSans9pt7b);
@@ -117,41 +128,3 @@ void blink(void *pvParameters) {
 		vTaskDelay(250 / portTICK_RATE_MS);
 	}
 }
-
-void powerBatteryStatus(void *pvParameters)
-{
-	for (;;) {
-		
-		Serial.print("Connected:");
-		Serial.println(powerStatus.getConnected());
-
-		Serial.print("Chaging Status:");
-		Serial.println(powerStatus.getChargingStatus());
-
-		Serial.print("Battery Level:");
-		Serial.println(powerStatus.getBatteryLevelPercent());
-
-		vTaskDelay(250 / portTICK_RATE_MS);
-	}
-}
-
-// void helloWorld()
-// {
-// 	display.setRotation(3);
-// 	display.setFont(&FreeMonoBold9pt7b);
-// 	display.setTextColor(GxEPD_BLACK);
-// 	int16_t tbx, tby;
-// // 	uint16_t tbw, tbh;
-// display.getTextBounds(HelloWorld, 0, 0, &tbx, &tby, &tbw, &tbh);
-// 	// center the bounding box by transposition of the origin:
-// 	uint16_t x = ((display.width() - tbw) / 2) - tbx;
-// 	uint16_t y = ((display.height() - tbh) / 2) - tby;
-// 	display.setFullWindow();
-// 	display.firstPage();
-// 	do
-// 	{
-// 		display.fillScreen(GxEPD_WHITE);
-// 		display.setCursor(x, y);
-// 		display.print(HelloWorld);
-// 	} while (display.nextPage());
-// }

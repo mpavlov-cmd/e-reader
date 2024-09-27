@@ -12,3 +12,4 @@
  - [Material Icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.size=24&icon.color=%235f6368)
  - [PNG to GIF](https://cloudconvert.com/png-to-gif)
  - [SD Card](https://github.com/espressif/arduino-esp32/tree/master/libraries/SD)
+ - [Bitmap From SD](https://github.com/ZinggJM/GxEPD2/blob/master/examples/GxEPD2_SD_Example/GxEPD2_SD_Example.ino)
