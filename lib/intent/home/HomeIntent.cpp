@@ -2,7 +2,7 @@
 
 
 HomeIntent::HomeIntent(
-    GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display, ESP32Time &espTime
+    GxEPD2_GFX& display, ESP32Time &espTime
 ) : AbstractDisplayIntent(display), espTime(espTime)
 {
     // Fill clock coordinates array on startup
@@ -46,13 +46,21 @@ void HomeIntent::onFrequncy(uint32_t freqMills)
 		char printVal[3];
         sprintf(printVal, "%02d", dt.byIndex(i));
 
-		do
-		{
-			display.fillRect(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
-			display.setCursor(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + tbh + 1);
-			display.print(printVal);
-		} while (display.nextPage());	
+		// do
+		// {
+		// 	display.fillRect(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
+		// 	display.setCursor(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + tbh + 1);
+		// 	display.print(printVal);
+		// } while (display.nextPage());	
 	}
+
+	display.firstPage();
+	do
+	{
+		// display.fillRect(clockBoxXY[2][0] + 1, clockBoxXY[2][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
+		display.setCursor(clockBoxXY[2][0] + 1, clockBoxXY[2][1] + tbh + 1);
+		display.print(random(0, 9));
+	} while (display.nextPage());
 
 	dt.flushMask();	
 

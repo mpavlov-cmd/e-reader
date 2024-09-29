@@ -3,10 +3,14 @@
 #include <plug.c> 
 
 PowerIndicator::PowerIndicator(
-    GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display,
-    PowerStatus &powerStatus
+    GxEPD2_GFX& display,
+    PowerStatus& powerStatus
 ) : display(display), powerStatus(powerStatus)
 {
+}
+
+void PowerIndicator::init() {
+
     int16_t x, y;
     uint16_t width, height, batteryStart;
     
@@ -27,15 +31,16 @@ PowerIndicator::PowerIndicator(
 
 void PowerIndicator::refresh()
 {
-
+    
     // display.setPartialWindow(widgetStartX, 0, widgetTotalWidth, batteryBox->hght());
     display.setPartialWindow(0, 0, display.width(), batteryBox->hght());
+    display.firstPage();
     do {
         // Clear display
         // display.fillRect(widgetStartX, 0, widgetTotalWidth, batteryBox->hght(), GxEPD_WHITE);
-        display.fillRect(0, 0, display.width(), batteryBox->hght(), GxEPD_WHITE);
+        // display.fillRect(0, 0, display.width(), batteryBox->hght(), GxEPD_WHITE);
 
-        // Draew Icon If connected
+        // // Draew Icon If connected
         if (powerStatus.getConnected()) {
             
             // Only show charging when connected, chargeAllowed and charging

@@ -1,3 +1,6 @@
+// Pass display as parameter
+#define ENABLE_GxEPD2_GFX 1
+
 #include <Arduino.h>
 
 #include "freertos/FreeRTOS.h"
@@ -8,6 +11,7 @@
 
 #include <ESP32Time.h>
 
+#include <GxEPD2_GFX.h>
 #include <GxEPD2_BW.h>
 #include <GxEPD2_display_selection_new_style.h>
 #include <Fonts/FreeSans9pt7b.h>
@@ -19,12 +23,17 @@
 #include <Battery.h>
 #include <FileManager.h>
 
-#define PIN_LED GPIO_NUM_25      // LED
-#define PIN_POWR_DET GPIO_NUM_34 // CHECK IF HAS EXTERNAL POWER  
+#define PIN_LED      GPIO_NUM_25 // LED
+#define PIN_PWR_DET  GPIO_NUM_34 // CHECK IF HAS EXTERNAL POWER  
+#define PIN_CHG_DET  GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
 #define PIN_BAT_STAT GPIO_NUM_36 // ANALOG BATTEY PERCENT 
-#define PIN_CHG_STAT GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
+
 #define PIN_CHG_ON   GPIO_NUM_15 // Set HIGH TO ENABLE CHARGER
 #define PIN_CS_SD    GPIO_NUM_26 // SD Schip Select
+
+#define PIN_BT_L GPIO_NUM_12
+#define PIN_BT_C GPIO_NUM_13
+#define PIN_BT_R GPIO_NUM_14
 
 const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
 const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
@@ -38,7 +47,7 @@ void blink(void *pvParameters);
 
 // var declarations 
 ESP32Time rtc(0);
-PowerStatus powerStatus(rtc, PIN_POWR_DET, PIN_CHG_STAT, PIN_BAT_STAT, PIN_CHG_ON);
+PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
 FileManager fileManager(PIN_CS_SD);
 
 // static uint8_t homeIntentBuffer[sizeof(HomeIntent)];
@@ -55,6 +64,11 @@ void setup()
   	}
 	Serial.println("-------- BOOT SUCCESS --------");
 
+	// Buttons test
+	pinMode(PIN_BT_L, INPUT_PULLUP);
+	pinMode(PIN_BT_C, INPUT_PULLUP);
+	pinMode(PIN_BT_R, INPUT_PULLUP);
+
 	// Indicate that I'm alive
 	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
 
@@ -69,16 +83,12 @@ void setup()
 	fileManager.listDir("/", 0);
 	fileManager.readFile("/Test.txt");
 
-	// HomeIntent homeIntent(display, rtc);
-	// homeIntent.onStartUp();
-	// To de-allocate memory use:
-	// homeIntent->~HomeInetnt();
-	// homeIntent = nullptr;
 	HomeIntent homeIntent(display, rtc);
-	// homeIntent.onStartUp();
+	homeIntent.onStartUp();
 
 	// Power Indicator 
 	PowerIndicator powerInd(display, powerStatus);
+	powerInd.init();
 
 	
 	// xTaskCreate(powerBatteryStatus, "powerBatteryStatus", 1000, NULL, 5, NULL);
@@ -87,7 +97,8 @@ void setup()
 
 	for (;;) {
 		homeIntent.onFrequncy(10);
-		powerInd.refresh();
+	 	powerInd.refresh();
+		delay(250);
 	}
 }
 
@@ -98,9 +109,11 @@ void loop()
 
 void initDisplay()
 {
-	// USE THIS for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-	// use serial_diag_bitrate = 115200 for logging
-	display.init(0, true, 2, false); 
+	// Use this for Waveshare boards with "clever" reset circuit, 2ms reset pulse;
+	// Use serial_diag_bitrate = 115200 for logging
+	// display.init(0, true, 2, false); 
+
+	display.init(0); 
 
 	display.setRotation(3);
 	display.setFont(&FreeSans9pt7b);
@@ -126,5 +139,6 @@ void blink(void *pvParameters) {
 		vTaskDelay(250 / portTICK_RATE_MS);
 		digitalWrite(PIN_LED, LOW);
 		vTaskDelay(250 / portTICK_RATE_MS);
+		// Serial.println(digitalRead(PIN_BT_C));
 	}
 }

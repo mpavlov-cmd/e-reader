@@ -29,7 +29,7 @@ struct HomeIntent : public AbstractDisplayIntent
         void initClockCoordinates();
 
     public:
-        HomeIntent(GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display, ESP32Time &espTime);
+        HomeIntent(GxEPD2_GFX& display, ESP32Time &espTime);
 
         String getName() override;
         void onStartUp() override;

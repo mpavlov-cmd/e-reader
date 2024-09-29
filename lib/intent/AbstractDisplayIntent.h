@@ -2,15 +2,16 @@
 #define ABSTRACTDISPLAYINTENT_H
 
 #include <AbstractIntent.h>
+#include <GxEPD2_GFX.h>
 #include <GxEPD2_BW.h>
 
 struct AbstractDisplayIntent : public AbstractIntent
 {
     protected:
-        GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> display;
+        GxEPD2_GFX& display;
 
     public:
-        AbstractDisplayIntent(GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display);
+        AbstractDisplayIntent(GxEPD2_GFX& display);
 };
 
 

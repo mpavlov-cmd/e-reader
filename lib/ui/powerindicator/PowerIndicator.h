@@ -1,11 +1,11 @@
 #ifndef POWERINDICATOR_H
 #define POWERINDICATOR_H
 
-#pragma once
-
 #include <Arduino.h>
-#include <PowerStatus.h>
+#include <GxEPD2_GFX.h>
 #include <GxEPD2_BW.h>
+
+#include <PowerStatus.h>
 #include <box/Box.h>
 
 struct PowerIndicator
@@ -14,8 +14,8 @@ struct PowerIndicator
         const char PERCENT_TEXT[5] = "100%";
         const uint8_t ICON_W = 20;
          
-        GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display;
-        PowerStatus powerStatus;
+        GxEPD2_GFX& display;
+        PowerStatus& powerStatus;
 
         // Define boxes for UI elements 
         Box* batteryBox = nullptr;
@@ -26,10 +26,11 @@ struct PowerIndicator
 
     public:
         PowerIndicator(
-            GxEPD2_BW<GxEPD2_290_T94_V2, (uint16_t)296U> &display,
-            PowerStatus &powerStatus
+            GxEPD2_GFX& display,
+            PowerStatus& powerStatus
         );
 
+        void init();
         void refresh();
 };
 

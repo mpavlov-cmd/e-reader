@@ -13,3 +13,4 @@
  - [PNG to GIF](https://cloudconvert.com/png-to-gif)
  - [SD Card](https://github.com/espressif/arduino-esp32/tree/master/libraries/SD)
  - [Bitmap From SD](https://github.com/ZinggJM/GxEPD2/blob/master/examples/GxEPD2_SD_Example/GxEPD2_SD_Example.ino)
+ - [Interrupts](https://www.youtube.com/watch?v=CJhWlfkf-5M)
