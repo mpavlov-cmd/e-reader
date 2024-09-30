@@ -10,15 +10,23 @@ struct FileManager
 private:
     const uint8_t csPin;
 
-    fs::FS& fs = SD;
+    fs::FS& fs;
     boolean cardAvailable = false;
     uint64_t cardSize = 0;
 
 public:
-    FileManager(const uint8_t csPin);
+    FileManager(fs::FS& fs, const uint8_t csPin);
 
     uint64_t begin();
     boolean isAvailable();
+
+    /**
+     * @param path to the file
+     * @param mode FILE_READ, FILE_WRITE, FILE_APPEND
+     * 
+     * @returns file. File must to be CLOSED after usage by calling file.close()
+     */
+    File openFile(const char *path, const char* mode);
 
     void listDir(const char *dirname, uint8_t levels);
     void createDir(const char *path);

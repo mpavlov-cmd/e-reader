@@ -1,8 +1,7 @@
 #include "FileManager.h"
 
-FileManager::FileManager(const uint8_t csPin) : csPin(csPin)
+FileManager::FileManager(fs::FS& fs, const uint8_t csPin) : fs(fs), csPin(csPin)
 {
-   
 }
 
 uint64_t FileManager::begin()
@@ -28,6 +27,11 @@ uint64_t FileManager::begin()
 boolean FileManager::isAvailable()
 {
     return cardAvailable;
+}
+
+File FileManager::openFile(const char *path, const char *mode)
+{
+    return fs.open(path, mode);
 }
 
 void FileManager::listDir(const char *dirname, uint8_t levels)

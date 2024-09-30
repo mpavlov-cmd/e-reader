@@ -16,6 +16,7 @@ String HomeIntent::getName()
 
 void HomeIntent::onStartUp()
 {
+	display.firstPage();
     do {
 		for (uint8_t i = 0; i < 6; i++) {
 			display.drawRect(clockBoxXY[i][0], clockBoxXY[i][1], framew, frameh, GxEPD_BLACK);

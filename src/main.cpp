@@ -22,6 +22,7 @@
 #include <powerindicator/PowerIndicator.h>
 #include <Battery.h>
 #include <FileManager.h>
+#include <ImageDrawer.h>
 
 #define PIN_LED      GPIO_NUM_25 // LED
 #define PIN_PWR_DET  GPIO_NUM_34 // CHECK IF HAS EXTERNAL POWER  
@@ -48,7 +49,7 @@ void blink(void *pvParameters);
 // var declarations 
 ESP32Time rtc(0);
 PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
-FileManager fileManager(PIN_CS_SD);
+FileManager fileManager(SD, PIN_CS_SD);
 
 // static uint8_t homeIntentBuffer[sizeof(HomeIntent)];
 // HomeIntent* homeIntent = nullptr;
@@ -84,7 +85,13 @@ void setup()
 	fileManager.readFile("/Test.txt");
 
 	HomeIntent homeIntent(display, rtc);
-	homeIntent.onStartUp();
+	// homeIntent.onStartUp();
+
+	// Create Image Viewer 
+	File image = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
+
+	ImageDrawer imageDrawer(display);
+	imageDrawer.drawBitmapFromSD_Buffered(image, 0, 100, false, false, false);
 
 	// Power Indicator 
 	PowerIndicator powerInd(display, powerStatus);
@@ -96,7 +103,7 @@ void setup()
 	// display.hibernate();
 
 	for (;;) {
-		homeIntent.onFrequncy(10);
+		// homeIntent.onFrequncy(10);
 	 	powerInd.refresh();
 		delay(250);
 	}
