@@ -87,6 +87,22 @@ void setup()
 	HomeIntent homeIntent(display, rtc);
 	// homeIntent.onStartUp();
 
+	DirIndex dirIndex = fileManager.indexDirectory("/background", false);
+	Serial.println("------ DIR INDEX SIZE --------");
+	Serial.println(dirIndex.size());
+
+	for (int i = 0; i < dirIndex.size(); i++) {
+		FileIndex fi = dirIndex.byIndex(i);
+		Serial.println("-------- Path ---------");
+		Serial.println(i);
+		Serial.println(fi.getPath());
+		if (fi.getPath() == "/background/ninja5.bmp") {
+			Serial.println("HAS 1");
+		}
+	}
+
+	// Serial.println(dirIndex.byIndex(1).getName());
+
 	// Create Image Viewer 
 	File image = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
 

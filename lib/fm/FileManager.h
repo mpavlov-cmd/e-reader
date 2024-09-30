@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <FS.h>
 #include <SD.h>
+#include <index/DirIndex.h>
 
 struct FileManager
 {
@@ -28,6 +29,14 @@ public:
      */
     File openFile(const char *path, const char* mode);
 
+    /**
+     * @param path to the directory where files should be counted
+     * @param inludeDirectories indicates if DirIndex should contain only files or directories as well
+     * 
+     */
+    DirIndex& indexDirectory(const char *path, boolean inludeDirectories);
+
+
     void listDir(const char *dirname, uint8_t levels);
     void createDir(const char *path);
     void removeDir(const char *path);
@@ -36,6 +45,11 @@ public:
     void appendFile(const char *path, const char *message);
     void renameFile(const char *path1, const char *path2);
     void deleteFile(const char *path);
+
+private:
+    boolean directoryExists(const char *path);
+
+
 };
 
 #endif

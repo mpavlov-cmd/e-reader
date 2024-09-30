@@ -34,6 +34,48 @@ File FileManager::openFile(const char *path, const char *mode)
     return fs.open(path, mode);
 }
 
+// TODO: Ignore hidden files
+DirIndex& FileManager::indexDirectory(const char *path, boolean inludeDirectories)
+{
+    DirIndex *dirIndex = new DirIndex();
+
+    File root = fs.open(path);
+
+    // TODO: Duplicate code
+    if (!root)
+    {
+        Serial.println("Failed to open directory");
+        return *dirIndex;
+    }
+    if (!root.isDirectory())
+    {
+        Serial.println("Not a directory");
+        return *dirIndex;
+    }
+
+    // Init Dir Index
+
+    File file = root.openNextFile();
+    while (file)
+    {
+        if (file.isDirectory() && !inludeDirectories)
+        {
+            file.close();
+            file = root.openNextFile();
+            continue;
+        }
+
+        // TODO: Fix Estension
+        FileIndex *fileIndex = new FileIndex(file.name(), file.path(), ".png", file.size(), file.isDirectory());
+        dirIndex->add(fileIndex);
+
+        file.close();
+        file = root.openNextFile();
+    }
+
+    return *dirIndex;
+}
+
 void FileManager::listDir(const char *dirname, uint8_t levels)
 {
     Serial.printf("Listing directory: %s\n", dirname);
@@ -185,4 +227,9 @@ void FileManager::deleteFile(const char *path)
     {
         Serial.println("Delete failed");
     }
+}
+
+boolean FileManager::directoryExists(const char *path)
+{
+    return boolean();
 }
