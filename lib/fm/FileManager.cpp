@@ -36,7 +36,7 @@ File FileManager::openFile(const char *path, const char *mode)
 }
 
 // TODO: Ignore hidden files
-DirIndex FileManager::indexDirectory(const char *path, boolean showDir, boolean showHidden)
+DirIndex FileManager::indexDirectory(const char *path, const DirIndexConf& conf)
 {
     DirIndex dirIndex;
 
@@ -58,13 +58,13 @@ DirIndex FileManager::indexDirectory(const char *path, boolean showDir, boolean 
     File file = root.openNextFile();
     while (file)
     {
-        if (!showDir && file.isDirectory())
+        if (!conf.showDir && file.isDirectory())
         {
             closeAndOpenNext(root, file);
             continue;
         }
 
-        if (!showHidden && file.name()[0] == '.')
+        if (!conf.showHidden && file.name()[0] == '.')
         {
             closeAndOpenNext(root, file);
             continue;
@@ -80,6 +80,13 @@ DirIndex FileManager::indexDirectory(const char *path, boolean showDir, boolean 
 
         char* nullableFileExt = findFileExtension(nonConstFilename);
         const char* fileExt = nullableFileExt == nullptr ? "" : nullableFileExt; 
+
+        // Filter by ext. See correct way to compare 2 strings (const char *)
+        if (conf.filterByExt && strcmp(conf.extNeedle, fileExt) != 0)
+        {
+            closeAndOpenNext(root, file);
+            continue;
+        }
 
         FileIndex *fileIndex = new FileIndex(file.name(), file.path(), fileExt, file.size(), file.isDirectory());
         dirIndex.add(fileIndex);

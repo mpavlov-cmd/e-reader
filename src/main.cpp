@@ -87,24 +87,13 @@ void setup()
 	HomeIntent homeIntent(display, rtc);
 	// homeIntent.onStartUp();
 
-	DirIndex dirIndex = fileManager.indexDirectory("/background", false, false);
-	Serial.println("------ DIR INDEX SIZE --------");
-	Serial.println(dirIndex.size());
-
-	for (int i = 0; i < dirIndex.size(); i++) {
-		FileIndex fi = dirIndex.byIndex(i);
-		Serial.println("-------- Path ---------");
-		Serial.println(i);
-		Serial.println(fi.getPath());
-		Serial.println(fi.getExt());
-		if (fi.getPath() == "/background/ninja5.bmp") {
-			Serial.println("HAS 1");
-		}
-	}
+	// Get Random image for random() first argument inclusive, second exclusive
+	DirIndex dirIndex = fileManager.indexDirectory("/background", {false, false, true, "bmp"});
+	uint8_t randFileIndex = random(0, dirIndex.size());
+	const char* randoomPath = dirIndex.byIndex(randFileIndex).getPath();
 
 	// Create Image Viewer 
-	File image = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
-
+	File image = fileManager.openFile(randoomPath, FILE_READ);
 	ImageDrawer imageDrawer(display);
 	imageDrawer.drawBitmapFromSD_Buffered(image, 0, 100, false, false, false);
 
@@ -112,7 +101,6 @@ void setup()
 	PowerIndicator powerInd(display, powerStatus);
 	powerInd.init();
 
-	
 	// xTaskCreate(powerBatteryStatus, "powerBatteryStatus", 1000, NULL, 5, NULL);
 	// Sleep
 	// display.hibernate();
@@ -120,7 +108,7 @@ void setup()
 	for (;;) {
 		// homeIntent.onFrequncy(10);
 	 	powerInd.refresh();
-		delay(250);
+		delay(5000);
 	}
 }
 

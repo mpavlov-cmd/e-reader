@@ -6,6 +6,13 @@
 #include <SD.h>
 #include <index/DirIndex.h>
 
+struct DirIndexConf {
+    const boolean showDir;
+    const boolean showHidden;
+    const boolean filterByExt;
+    const char* extNeedle;
+};
+
 struct FileManager
 {
 private:
@@ -41,7 +48,7 @@ public:
      *
      * @returns DirIndex object. The object will be copied to the calling code. This is fine
      */
-    DirIndex indexDirectory(const char *path, boolean showDir, boolean showHidden);
+    DirIndex indexDirectory(const char *path, const DirIndexConf& conf);
 
     /**
      * Fild file extention
