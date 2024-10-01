@@ -16,7 +16,11 @@ FileIndex::FileIndex(
     path[MAX_PATH_LENGTH - 1] = '\0'; // Ensuring null-termination
 
     strncpy(ext, fileExt, MAX_EXT_LENGTH - 1);
-    path[MAX_PATH_LENGTH - 1] = '\0'; // Ensuring null-termination
+    ext[MAX_EXT_LENGTH - 1] = '\0'; // Ensuring null-termination
+}
+
+FileIndex::FileIndex(): size(0), isDir(false)
+{
 }
 
 const char* FileIndex::getName()

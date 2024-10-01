@@ -14,8 +14,7 @@ boolean DirIndex::add(FileIndex* fileIndex)
 
 boolean DirIndex::removeLast()
 {
-    // TODO: deallocate memory
-    fileIndexArray[index] = nullptr;
+    delete fileIndexArray[index];
     if (index == 0)
     {
         return false;
@@ -25,11 +24,14 @@ boolean DirIndex::removeLast()
     return true;
 }
 
-FileIndex& DirIndex::byIndex(uint8_t idx)
+FileIndex DirIndex::byIndex(uint8_t idx)
 {
     if (idx >= UINT8_MAX) {
-        // TODO: Throw error
+        Serial.println("Error, no such index");
+        FileIndex emptyFileIndex;
+        return emptyFileIndex;
     }
+
     FileIndex* fi = fileIndexArray[idx];
     return *fi;
 }

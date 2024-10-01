@@ -1,32 +1,33 @@
 #include "FileManager.h"
 
-FileManager::FileManager(fs::FS& fs, const uint8_t csPin) : fs(fs), csPin(csPin)
+FileManager::FileManager(fs::FS &fs, const uint8_t csPin) : fs(fs), csPin(csPin)
 {
 }
 
 uint64_t FileManager::begin()
 {
     cardAvailable = SD.begin(csPin);
-    if (!cardAvailable) {
-		 Serial.println("Card Mount Failed");
-	}
+    if (!cardAvailable)
+    {
+        Serial.println("Card Mount Failed");
+
+        this->cardSize = 0;
+        return cardSize;
+    }
 
     uint8_t cardType = SD.cardType();
-	if (cardType == CARD_NONE)
-	{
-		Serial.println("No SD card attached");
-	} else {
-		uint64_t cardSize = SD.cardSize() / (1024 * 1024);
- 		Serial.printf("SD Card Size: %lluMB\n", cardSize);
-	}
+    if (cardType == CARD_NONE)
+    {
+        Serial.println("No SD card attached");
+
+        this->cardSize = 0;
+        return cardSize;
+    }
+
+    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+    Serial.printf("SD Card Size: %lluMB\n", cardSize);
 
     return cardSize;
-
-}
-
-boolean FileManager::isAvailable()
-{
-    return cardAvailable;
 }
 
 File FileManager::openFile(const char *path, const char *mode)
@@ -35,9 +36,9 @@ File FileManager::openFile(const char *path, const char *mode)
 }
 
 // TODO: Ignore hidden files
-DirIndex& FileManager::indexDirectory(const char *path, boolean inludeDirectories)
+DirIndex FileManager::indexDirectory(const char *path, boolean showDir, boolean showHidden)
 {
-    DirIndex *dirIndex = new DirIndex();
+    DirIndex dirIndex;
 
     File root = fs.open(path);
 
@@ -45,35 +46,64 @@ DirIndex& FileManager::indexDirectory(const char *path, boolean inludeDirectorie
     if (!root)
     {
         Serial.println("Failed to open directory");
-        return *dirIndex;
+        return dirIndex;
     }
     if (!root.isDirectory())
     {
         Serial.println("Not a directory");
-        return *dirIndex;
+        return dirIndex;
     }
 
     // Init Dir Index
-
     File file = root.openNextFile();
     while (file)
     {
-        if (file.isDirectory() && !inludeDirectories)
+        if (!showDir && file.isDirectory())
         {
-            file.close();
-            file = root.openNextFile();
+            closeAndOpenNext(root, file);
             continue;
         }
 
-        // TODO: Fix Estension
-        FileIndex *fileIndex = new FileIndex(file.name(), file.path(), ".png", file.size(), file.isDirectory());
-        dirIndex->add(fileIndex);
+        if (!showHidden && file.name()[0] == '.')
+        {
+            closeAndOpenNext(root, file);
+            continue;
+        }
 
-        file.close();
-        file = root.openNextFile();
+        // Finding extention
+        // Determine the length needed for the destination (including null terminator)
+        // Allocate enough space for the destination array
+        const char* filename = file.name();
+        size_t length = strlen(filename) + 1; 
+        char nonConstFilename[length]; 
+        strcpy(nonConstFilename, filename);  
+
+        char* nullableFileExt = findFileExtension(nonConstFilename);
+        const char* fileExt = nullableFileExt == nullptr ? "" : nullableFileExt; 
+
+        FileIndex *fileIndex = new FileIndex(file.name(), file.path(), fileExt, file.size(), file.isDirectory());
+        dirIndex.add(fileIndex);
+
+        closeAndOpenNext(root, file);
     }
 
-    return *dirIndex;
+    root.close();
+    return dirIndex;
+}
+
+char *FileManager::findFileExtension(char *filename)
+{
+    char *dot = nullptr;
+
+    // Traverse the string to find the last dot '.'
+    for (int i = 0; filename[i] != '\0'; i++) {
+        if (filename[i] == '.') {
+            dot = &filename[i + 1];  // Point to the character after the dot
+        }
+    }
+
+    // Check if an extension was found
+    return dot;
 }
 
 void FileManager::listDir(const char *dirname, uint8_t levels)
@@ -229,7 +259,8 @@ void FileManager::deleteFile(const char *path)
     }
 }
 
-boolean FileManager::directoryExists(const char *path)
+void FileManager::closeAndOpenNext(File &root, File &file)
 {
-    return boolean();
+    file.close();
+    file = root.openNextFile();
 }

@@ -26,6 +26,8 @@ struct FileIndex
             const boolean isDirectry
         );
 
+        FileIndex();
+
         const char* getName();
         const char* getPath();
         const char* getExt();
@@ -33,10 +35,9 @@ struct FileIndex
         const boolean getIsDirectry();
 
         ~FileIndex() {
-            // delete[] name, path, ext, size, isDirectory;  // Free the allocated memory
-            // Serial.println("Deallocated memory for FileIndex");
+            // no action since delete should be called only for dynamically allocated memory: objects and arrays created with
+            // new operator
         }
 };
-
 
 #endif
