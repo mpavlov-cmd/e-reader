@@ -186,7 +186,6 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 	boolean isCharPrintable   = false;
 	boolean endOfWord         = false;
 	boolean endOfLine         = false;
-	boolean endOfLineOriginal = false;
 
 	while (file.available()) {
 		
@@ -222,7 +221,7 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 		}
 
 		if (endOfWord) {
-			word.replace(" ", "");
+			word.trim();
 			line.concat(word);
 			wordIndex++;
 
@@ -243,7 +242,16 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 
 		if (c == '\n') {
 			if (!skipNextLineBreak) {
-				word.concat(c);
+				word.trim();
+				line.concat(word);
+
+				line.trim();
+				page.concat(line);
+				page.concat('\n');
+				lineIndex++;
+
+			line.clear();
+
 			} else {
 				skipNextLineBreak = false;
 			}
@@ -253,7 +261,7 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 		prevChar = c;
 		globalIndex++;
 		
-		if (lineIndex > 50) {
+		if (lineIndex > 100) {
 			break;
 		}
 
