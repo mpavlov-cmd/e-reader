@@ -35,7 +35,6 @@ File FileManager::openFile(const char *path, const char *mode)
     return fs.open(path, mode);
 }
 
-// TODO: Ignore hidden files
 DirIndex FileManager::indexDirectory(const char *path, const DirIndexConf& conf)
 {
     DirIndex dirIndex;

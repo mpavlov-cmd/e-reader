@@ -43,6 +43,7 @@ const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
 // void helloWorld();
 void initDisplay();
 void blink(void *pvParameters);
+void indexText(const char* path, GxEPD2_GFX& display, FileManager& fileManager);
 
 // put constant definitions here
 
@@ -76,39 +77,40 @@ void setup()
 	// Set Time
 	rtc.setTime(0, 0, 0, 15, 9, 2024);
 
+	// Init File Manager
+	fileManager.begin();
+
 	// Init Display
 	initDisplay();
-	
-	// SPI Is initialized by the display
-	fileManager.begin();
-	fileManager.listDir("/", 0);
-	fileManager.readFile("/Test.txt");
 
-	HomeIntent homeIntent(display, rtc);
+	// TODO: Temp should go after init display
+	indexText("/books/japanese_homes.txt", display, fileManager);
+
+	// HomeIntent homeIntent(display, rtc);
 	// homeIntent.onStartUp();
 
 	// Get Random image for random() first argument inclusive, second exclusive
-	DirIndex dirIndex = fileManager.indexDirectory("/background", {false, false, true, "bmp"});
-	uint8_t randFileIndex = random(0, dirIndex.size());
-	const char* randoomPath = dirIndex.byIndex(randFileIndex).getPath();
+	// DirIndex dirIndex = fileManager.indexDirectory("/background", {false, false, true, "bmp"});
+	// uint8_t randFileIndex = random(0, dirIndex.size());
+	// const char* randoomPath = dirIndex.byIndex(randFileIndex).getPath();
 
-	// Create Image Viewer 
-	File image = fileManager.openFile(randoomPath, FILE_READ);
-	ImageDrawer imageDrawer(display);
-	imageDrawer.drawBitmapFromSD_Buffered(image, 0, 100, false, false, false);
+	// // Create Image Viewer 
+	// File image = fileManager.openFile(randoomPath, FILE_READ);
+	// ImageDrawer imageDrawer(display);
+	// imageDrawer.drawBitmapFromSD_Buffered(image, 0, 100, false, false, false);
 
-	// Power Indicator 
-	PowerIndicator powerInd(display, powerStatus);
-	powerInd.init();
+	// // Power Indicator 
+	// PowerIndicator powerInd(display, powerStatus);
+	// powerInd.init();
 
 	// xTaskCreate(powerBatteryStatus, "powerBatteryStatus", 1000, NULL, 5, NULL);
 	// Sleep
 	// display.hibernate();
 
 	for (;;) {
-		// homeIntent.onFrequncy(10);
-	 	powerInd.refresh();
-		delay(5000);
+		// // homeIntent.onFrequncy(10);
+	 	// powerInd.refresh();
+		// delay(5000);
 	}
 }
 
@@ -151,4 +153,124 @@ void blink(void *pvParameters) {
 		vTaskDelay(250 / portTICK_RATE_MS);
 		// Serial.println(digitalRead(PIN_BT_C));
 	}
+}
+
+void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
+{
+	const uint16_t textAreaWidth  = 480;
+	const uint16_t textAreaHeight = 760;
+
+	Serial.printf("Opening file %s\n", path);
+	// DirIndex di = fileManager.indexDirectory("/books", fileManager.DIR_IDX_FULL);
+	File file = fileManager.openFile(path, FILE_READ);
+	if (!file) {
+		Serial.printf("Unable to open file %s\n", path);
+	}
+
+	Serial.printf("File size: %i\n", file.size());
+
+	// Define variables for screen size
+	int16_t x, y;
+    uint16_t width, height, batteryStart;
+
+	uint64_t globalIndex = 0;
+	uint16_t lineIndex   = 0;
+	uint8_t wordIndex    = 0;
+		
+	char prevChar;
+	String word = "";
+	String line = "";
+	String page = "";
+
+	boolean skipNextLineBreak = false;
+	boolean isCharPrintable   = false;
+	boolean endOfWord         = false;
+	boolean endOfLine         = false;
+	boolean endOfLineOriginal = false;
+
+	while (file.available()) {
+		
+		char c = file.read();
+
+		// End of word and line
+		if (c == ' ' || c == '\n') {
+			// Mafk end of word
+			endOfWord = true;
+
+			// Mesaure line length
+			String tempLine = line;
+			tempLine.concat(word);
+			tempLine.trim();
+
+			display.getTextBounds(tempLine, 0, 0, &x, &y, &width, &height);
+
+			if (width >= textAreaWidth - 20) {
+				endOfLine = true;
+				skipNextLineBreak = true;
+			}
+		}
+
+		if (endOfLine) {
+			// Add Line to the page
+			line.trim();
+			page.concat(line);
+			page.concat('\n');
+			lineIndex++;
+
+			line.clear();
+			endOfLine = false;
+		}
+
+		if (endOfWord) {
+			word.replace(" ", "");
+			line.concat(word);
+			wordIndex++;
+
+			line.concat(' ');
+			word.clear();
+			endOfWord = false;
+		}
+
+		// if (prevChar == '\n')
+		// {
+		// 	word.concat(' ');
+		// }
+
+		// Add char to word
+		if (c != ' ' && isPrintable(c)) {
+			word.concat(c);
+		}
+
+		if (c == '\n') {
+			if (!skipNextLineBreak) {
+				word.concat(c);
+			} else {
+				skipNextLineBreak = false;
+			}
+		}
+		
+		// Save prev. char before quit 
+		prevChar = c;
+		globalIndex++;
+		
+		if (lineIndex > 50) {
+			break;
+		}
+
+		if (globalIndex >= 2048) {
+			break;
+		}
+	}
+	
+	Serial.println("Page:");
+	Serial.println(page);
+
+	display.setFullWindow();
+	display.setCursor(0, 20);
+	display.firstPage();
+	do {
+		display.print(page);
+	} while (display.nextPage());
+
+	file.close();
 }

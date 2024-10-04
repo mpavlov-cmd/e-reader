@@ -23,6 +23,8 @@ private:
     uint64_t cardSize = 0;
 
 public:
+    const DirIndexConf DIR_IDX_FULL = {false, false, false, nullptr};
+
     FileManager(fs::FS &fs, const uint8_t csPin);
 
     /**
