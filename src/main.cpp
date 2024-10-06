@@ -84,6 +84,7 @@ void setup()
 	initDisplay();
 
 	// TODO: Temp should go after init display
+	// indexText("/books/japanese_homes.txt", display, fileManager);
 	indexText("/books/water.txt", display, fileManager);
 
 	// HomeIntent homeIntent(display, rtc);
@@ -171,19 +172,25 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 
 	// Define variables for screen size
 	int16_t x, y;
-    uint16_t width, height;
+    uint16_t width = 0, height = 0, wordWidth = 0, linewidth = 0;
 
 	// Get Space width
-	display.getTextBounds(" ", 0, 0, &x, &y, &width, &height);
-	uint8_t spaceWidth = width;
+	display.getTextBounds("s w", 0, 0, &x, &y, &width, &height);
+	uint8_t widthLarge = width;
+	display.getTextBounds("ws", 0, 0, &x, &y, &width, &height);
+	uint8_t widthSmall = width;
 
-	String page        = "";
+	uint8_t spaceWidth = widthLarge - widthSmall;
+	
+	String currentPage = "";
 	String currentLine = ""; // Holds the text for the current line
 	String currentWord = ""; // Holds the current word being built
+
+	// int currentLineWidth = 0;	// Tracks the pixel width of the current line
 	char c;
-	int currentLineWidth = 0;	   // Tracks the pixel width of the current line
-	bool skipLeadingSpaces = true; // Skip leading spaces on new lines
-	bool wrappedLine = false;	   // Track if the last line was wrapped
+	bool skipLeadingSpaces = true;  // Skip leading spaces on new lines
+	bool wrappedLine       = false; // Track if the last line was wrapped
+	bool spaceAfterWrap    = false; 
 
 	uint16_t lineIndex = 0;
 
@@ -194,18 +201,22 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 		// If we hit a newline or space, treat it as a word boundary
 		if (c == ' ' || c == '\n')
 		{
-			display.getTextBounds(currentWord, 0, 0, &x, &y, &width, &height); // Get the pixel width of the current word
+			// Drop values in case word or line are empty
+			wordWidth = linewidth = height = 0;
+			display.getTextBounds(currentWord, 0, 0, &x, &y, &wordWidth, &height); // Get the pixel width of the current word
+			display.getTextBounds(currentLine, 0, 0, &x, &y, &linewidth, &height); // Get the pixel width of the current word
 
 			// Check if the current word fits on the line
-			if (currentLineWidth + width > textAreaWidth - 50)
+			if (linewidth + spaceWidth + wordWidth >= textAreaWidth - 2)
 			{
 				// If the word doesn't fit, print the current line and start a new one
-				page.concat(currentLine); // Display the current line
-				page.concat('\n');
+				currentPage.concat(currentLine);
+				currentPage.concat('\n');
 				currentLine = "";		  // Reset current line
-				currentLineWidth = 0;	  // Reset width counter
+				// currentLineWidth = 0;  // Reset width counter
 				skipLeadingSpaces = true; // Skip leading spaces for the next line
 				wrappedLine = true;		  // Mark that the line was wrapped
+				spaceAfterWrap = true;
 
 				lineIndex++;
 			}
@@ -214,65 +225,78 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 			if (!skipLeadingSpaces || currentWord.length() > 0)
 			{
 				currentLine += currentWord;
-				currentLineWidth += width;
+				// currentLineWidth += width;
+
+				if (wrappedLine && spaceAfterWrap) {
+					currentLine += ' ';
+					// currentLineWidth += spaceWidth;
+					spaceAfterWrap = false;
+				}
 			}
 
 			// Add space if it's not the start of a new line
 			if (c == ' ')
 			{
-				if (!skipLeadingSpaces)
+				// Avoid more then one space in row
+				if (!skipLeadingSpaces && (currentLine.length() > 0 && currentLine.charAt(currentLine.length() - 1) != ' '))
 				{
 					currentLine += ' ';
-					currentLineWidth += spaceWidth;
-					// wrappedLine = false; // It's a space, so no line wrapping occurred
+					// currentLineWidth += spaceWidth;
 				}
 			}
 
 			// If there's a newline, print the current line and move to the next line
 			if (c == '\n')
 			{
-				if (!wrappedLine)
-				{							  // Only print the line if it wasn't already wrapped
-					page.concat(currentLine); // Display the current line
-					page.concat('\n');
+				if (!wrappedLine)  // Only print the line if it wasn't already wrapped
+				{							 
+					currentPage.concat(currentLine); // Display the current line
+					currentPage.concat('\n');
 					lineIndex++;
 
 					currentLine = "";		  // Reset the line
-					currentLineWidth = 0;	  // Reset width counter
+					// currentLineWidth = 0;  // Reset width counter
 					skipLeadingSpaces = true; // Skip leading spaces for the next line
+				} else {
+					// Add space instead of '\n' when line was wrapped
+					if (currentLine.length() > 0 && currentLine.charAt(currentLine.length() - 1) != ' ') {
+						currentLine += ' ';
+						// currentLineWidth += spaceWidth;
+					}
 				}
 
-				wrappedLine = false;	  // Reset wrap tracking
+				wrappedLine = false;
 			}
 
 			// Clear the current word
 			currentWord = "";
 		}
-		else if (isPrintable(c))
+		
+		else if (c != ' ' && isPrintable(c))
 		{
 			// If it's a normal character, build the current word
 			currentWord += c;
 			skipLeadingSpaces = false; // We've found non-space content, so we stop skipping spaces
 		}
 
-		if (lineIndex > 50) {
+		if (lineIndex > 400) {
 			break;
 		}
 	}
 
 	if (!currentLine.isEmpty())
 	{
-		page.concat(currentLine);
+		currentPage.concat(currentLine);
 	}
 
 	Serial.println("Page:");
-	Serial.println(page);
+	Serial.println(currentPage);
 
 	display.setFullWindow();
 	display.setCursor(0, 20);
 	display.firstPage();
 	do {
-		display.print(page);
+		display.print(currentPage);
 	} while (display.nextPage());
 
 	file.close();
