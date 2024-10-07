@@ -30,6 +30,11 @@ uint64_t FileManager::begin()
     return cardSize;
 }
 
+bool FileManager::exists(const char *path)
+{
+    return fs.exists(path);
+}
+
 File FileManager::openFile(const char *path, const char *mode)
 {
     return fs.open(path, mode);
@@ -110,6 +115,36 @@ char *FileManager::findFileExtension(char *filename)
 
     // Check if an extension was found
     return dot;
+}
+
+const char* FileManager::getParentDir(const char *path)
+{
+    const char *lastSlash = strrchr(path, '/'); // Find the last occurrence of '/'
+	if (lastSlash != nullptr)
+	{
+		size_t dirLength = lastSlash - path;			 // Calculate the length of the directory part
+		char *directory = (char *)malloc(dirLength + 1); // Allocate memory for the directory string
+		strncpy(directory, path, dirLength);			 // Copy the directory part
+		directory[dirLength] = '\0';					 // Null-terminate the string
+		return directory;
+	}
+	return "/";
+}
+
+bool FileManager::writeFile(const char *path, const char *message)
+{
+    Serial.printf("Writing file: %s\n", path);
+
+    File file = fs.open(path, FILE_WRITE);
+    if (!file)
+    {
+        Serial.println("Failed to open file for writing");
+        return false;
+    }
+    bool result = file.print(message);
+    file.close();
+
+    return result;
 }
 
 void FileManager::listDir(const char *dirname, uint8_t levels)
@@ -197,26 +232,6 @@ void FileManager::readFile(const char *path)
     file.close();
 }
 
-void FileManager::writeFile(const char *path, const char *message)
-{
-    Serial.printf("Writing file: %s\n", path);
-
-    File file = fs.open(path, FILE_WRITE);
-    if (!file)
-    {
-        Serial.println("Failed to open file for writing");
-        return;
-    }
-    if (file.print(message))
-    {
-        Serial.println("File written");
-    }
-    else
-    {
-        Serial.println("Write failed");
-    }
-    file.close();
-}
 
 void FileManager::appendFile(const char *path, const char *message)
 {

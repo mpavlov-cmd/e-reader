@@ -45,6 +45,9 @@ void initDisplay();
 void blink(void *pvParameters);
 void indexText(const char* path, GxEPD2_GFX& display, FileManager& fileManager);
 
+// TODO: 
+void savePage(const char* path, const char* name, String contents);
+
 // put constant definitions here
 
 // var declarations 
@@ -162,13 +165,36 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 	const uint16_t textAreaHeight = 760;
 
 	Serial.printf("Opening file %s\n", path);
-	// DirIndex di = fileManager.indexDirectory("/books", fileManager.DIR_IDX_FULL);
 	File file = fileManager.openFile(path, FILE_READ);
 	if (!file) {
 		Serial.printf("Unable to open file %s\n", path);
 	}
 
 	Serial.printf("File size: %i\n", file.size());
+
+	// ----------------- BEGIN TEMP DIR CREATION ------------------
+	const char* parentDir = fileManager.getParentDir(file.path());
+	Serial.println("Dir Name:");
+	Serial.println(parentDir);
+
+	// Chreat temp dir name
+	String filename = String(file.name());
+	String fileSizeStr = String(file.size());
+	filename.toLowerCase();
+
+	String idxDirName = "._" + filename + "_" + fileSizeStr + "_idx";	
+	String idxDirPath = String(parentDir) + "/" + idxDirName;
+
+	const char* idxDirPathCharArr = idxDirPath.c_str();
+
+	if (!fileManager.exists(idxDirPathCharArr)) {
+		Serial.printf("Creating directory: %s\n", idxDirPathCharArr);
+		fileManager.createDir(idxDirPathCharArr);
+	}
+
+	Serial.printf("Idx directory path: %s\n", idxDirPathCharArr);
+
+	// ----------------- END TEMP DIR CREATION ------------------
 
 	// Define variables for screen size
 	int16_t x, y;
@@ -179,8 +205,13 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 	uint8_t widthLarge = width;
 	display.getTextBounds("ws", 0, 0, &x, &y, &width, &height);
 	uint8_t widthSmall = width;
+    uint8_t spaceWidth = widthLarge - widthSmall;
 
-	uint8_t spaceWidth = widthLarge - widthSmall;
+	// Find fine one line height 
+	display.getTextBounds("LINE\n\nLINE", 0, 0, &x, &y, &width, &height);
+	uint8_t lineHeight = height / 3 + 2;
+	uint16_t numLines  = textAreaHeight / lineHeight - 1; 
+	Serial.printf("Lines per page: %i, lineh eight: %i\n", numLines, lineHeight);
 	
 	String currentPage = "";
 	String currentLine = ""; // Holds the text for the current line
@@ -193,6 +224,7 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 	bool spaceAfterWrap    = false; 
 
 	uint16_t lineIndex = 0;
+	uint16_t pageIndex = 0;
 
 	while (file.available())
 	{
@@ -279,7 +311,16 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 			skipLeadingSpaces = false; // We've found non-space content, so we stop skipping spaces
 		}
 
-		if (lineIndex > 400) {
+		if (lineIndex >= numLines) {
+			String pageFileName = "._" + String(pageIndex) + ".page.txt";
+			savePage(idxDirPathCharArr, pageFileName.c_str(), currentPage);
+			
+			currentPage = "";
+			pageIndex++;
+			lineIndex = currentLine.isEmpty() ? 0 : 1;
+		}
+
+		if (pageIndex > 10) {
 			break;
 		}
 	}
@@ -289,15 +330,49 @@ void indexText(const char *path, GxEPD2_GFX &display, FileManager &fileManager)
 		currentPage.concat(currentLine);
 	}
 
+	// Print Random page
+
+	DirIndex dirIndex = fileManager.indexDirectory(idxDirPathCharArr, {false, true, true, "txt"});
+	Serial.println(dirIndex.size());
+
+	uint8_t randFileIdxNum = random(0, dirIndex.size());
+	FileIndex randFileIdx  = dirIndex.byIndex(randFileIdxNum);
+
+	Serial.println("----- File Index Data ------");
+	Serial.println(randFileIdx.getPath());
+	Serial.println(randFileIdx.getSize());
+
+	File randomPageFile = fileManager.openFile(randFileIdx.getPath(), FILE_READ);
+
+	String randomPage = "";
+	while (randomPageFile.available())
+	{
+		char tc = randomPageFile.read();
+		randomPage.concat(tc);
+	}
+	
+	randomPageFile.close();
+
 	Serial.println("Page:");
-	Serial.println(currentPage);
+	Serial.println(randomPage);
 
 	display.setFullWindow();
 	display.setCursor(0, 20);
 	display.firstPage();
 	do {
-		display.print(currentPage);
+		display.print(randomPage);
 	} while (display.nextPage());
 
 	file.close();
+}
+
+// TODO: Path just filename to avoid multiple back-n-force string conversion
+void savePage(const char* path, const char* name, String contents) {
+	String fileName = String(path) + '/' + name;
+	bool result = fileManager.writeFile(fileName.c_str(), contents.c_str());
+	if (result) {
+		Serial.println("Success");
+	} else {
+		Serial.println("Failed");
+	}
 }

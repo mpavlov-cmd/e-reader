@@ -35,6 +35,15 @@ public:
     uint64_t begin();
 
     /**
+     * Checks if file or directory exists
+     * 
+     * @param path to file or directory
+     *
+     * @returns true if exists, false if not
+     */
+    bool exists(const char* path);
+
+    /**
      * @param path to the file
      * @param mode FILE_READ, FILE_WRITE, FILE_APPEND
      *
@@ -61,12 +70,31 @@ public:
      */
     char *findFileExtension(char *filename);
 
+    /**
+     * Allows to find directory name out of File::path()
+     * Do not forget to free meemory when not needed uing free((void*)retval);
+     *
+     * @param path file path
+     *
+     * @returns path to the directory without ending slash or '/'
+     */
+    const char* getParentDir(const char *path);
+
+    /**
+     * Writes contents to the newrly created file 
+     * 
+     * @param path path to the new file
+     * @param message file contents 
+     * 
+     * @returns true if write succesful
+     */
+    bool writeFile(const char *path, const char *message);
+
     // TODO: Here as an example. Review what's needed
     void listDir(const char *dirname, uint8_t levels);
     void createDir(const char *path);
     void removeDir(const char *path);
     void readFile(const char *path);
-    void writeFile(const char *path, const char *message);
     void appendFile(const char *path, const char *message);
     void renameFile(const char *path1, const char *path2);
     void deleteFile(const char *path);
