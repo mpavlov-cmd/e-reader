@@ -2,7 +2,7 @@
 
 boolean DirIndex::add(FileIndex* fileIndex)
 {
-    if (index >= UINT8_MAX)
+    if (index >= CAPACITY)
     {
         return false;
     }
@@ -24,9 +24,9 @@ boolean DirIndex::removeLast()
     return true;
 }
 
-FileIndex DirIndex::byIndex(uint8_t idx)
+FileIndex DirIndex::byIndex(uint16_t idx)
 {
-    if (idx >= UINT8_MAX) {
+    if (idx >= CAPACITY) {
         Serial.println("Error, no such index");
         FileIndex emptyFileIndex;
         return emptyFileIndex;
@@ -36,7 +36,7 @@ FileIndex DirIndex::byIndex(uint8_t idx)
     return *fi;
 }
 
-uint8_t DirIndex::size()
+uint16_t DirIndex::size()
 {
     return index;
 }

@@ -8,7 +8,9 @@ struct DirIndex
 {
 
 private:
-    uint8_t index;
+    const uint16_t CAPACITY = 2048;
+
+    uint16_t index;
     FileIndex **fileIndexArray;
 
 public:
@@ -34,25 +36,27 @@ public:
      * @param idx index of the file to return
      * @returns copy of the stored FileIndex object to avoid a need for manual memory deallocation
      */
-    FileIndex byIndex(uint8_t idx);
+    FileIndex byIndex(uint16_t idx);
 
     /**
      * @returns size of the index 
      */
-    uint8_t size();
+    uint16_t size();
 
     DirIndex() {
-        fileIndexArray = new FileIndex*[UINT8_MAX];
+        Serial.println("--- Start index space allocation ---");
+        fileIndexArray = new FileIndex*[CAPACITY];
         index = 0;
-        for (int i = 0; i < UINT8_MAX; ++i) {
+        for (int i = 0; i < CAPACITY; ++i) {
             fileIndexArray[i] = nullptr;
         }
+        Serial.println("--- Finished index space allocation ---");
     }
 
     ~DirIndex()
     {
         // Destructor to free allocated memory
-        for (uint8_t i = 0; i < index; i++)
+        for (uint16_t i = 0; i < index; i++)
         {
             delete fileIndexArray[i];
         }

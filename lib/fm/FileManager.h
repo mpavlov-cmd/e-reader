@@ -51,7 +51,6 @@ public:
      */
     File openFile(const char *path, const char *mode);
 
-    // TODO: Pass struct as a parameter which would include showDir, showHidden, and ext. filter
     /**
      * @param path to the directory where files should be counted
      * @param showDir indicates if DirIndex should contain only files or directories as well
