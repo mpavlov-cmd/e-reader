@@ -67,7 +67,7 @@ public:
      *
      * @returns pointer to the same string but 1 char after last dot ext or nullptr
      */
-    char *findFileExtension(char *filename);
+    const char *findFileExtension(const char *filename);
 
     /**
      * Allows to find directory name out of File::path()

@@ -87,10 +87,13 @@ void setup()
 	File pagesDirFile = textIndex.generateIdx("/books/water.txt");
 
 	// TODO: Temp: showing random page
+	unsigned long startIndexMills = millis();
+	Serial.println("--- Index Dir Start ---"); 
 	DirIndex dirIndex = fileManager.indexDirectory(pagesDirFile.path(), {false, true, true, "txt"});
+	Serial.printf("Index dir ended in %i\n", millis() - startIndexMills);
+	
 	uint8_t randFileIdxNum = random(0, dirIndex.size());
 	FileIndex randFileIdx  = dirIndex.byIndex(randFileIdxNum);
-
 	Serial.println("--- File Index Data ---");
 	Serial.println(randFileIdx.getPath());
 

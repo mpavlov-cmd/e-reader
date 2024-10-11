@@ -75,15 +75,7 @@ DirIndex FileManager::indexDirectory(const char *path, const DirIndexConf& conf)
         }
 
         // Finding extention
-        // Determine the length needed for the destination (including null terminator)
-        // Allocate enough space for the destination array
-        const char* filename = file.name();
-        size_t length = strlen(filename) + 1; 
-        char nonConstFilename[length]; 
-        strcpy(nonConstFilename, filename);  
-
-        char* nullableFileExt = findFileExtension(nonConstFilename);
-        const char* fileExt = nullableFileExt == nullptr ? "" : nullableFileExt; 
+        const char* fileExt = findFileExtension(file.name());
 
         // Filter by ext. See correct way to compare 2 strings (const char *)
         if (conf.filterByExt && strcmp(conf.extNeedle, fileExt) != 0)
@@ -102,9 +94,9 @@ DirIndex FileManager::indexDirectory(const char *path, const DirIndexConf& conf)
     return dirIndex;
 }
 
-char *FileManager::findFileExtension(char *filename)
+const char *FileManager::findFileExtension(const char *filename)
 {
-    char *dot = nullptr;
+    const char *dot = nullptr;
 
     // Traverse the string to find the last dot '.'
     for (int i = 0; filename[i] != '\0'; i++) {
