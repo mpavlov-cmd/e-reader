@@ -25,17 +25,15 @@
 #include <ImageDrawer.h>
 #include <text/TextIndex.h>
 
-#define PIN_LED      GPIO_NUM_25 // LED
-#define PIN_PWR_DET  GPIO_NUM_34 // CHECK IF HAS EXTERNAL POWER  
+
 #define PIN_CHG_DET  GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
-#define PIN_BAT_STAT GPIO_NUM_36 // ANALOG BATTEY PERCENT 
+#define PIN_BAT_STAT GPIO_NUM_36 // (SENSOR_VP) ANALOG BATTEY PERCENT 
+#define PIN_PWR_DET  GPIO_NUM_39 // (SENSOR_VN) CHECK IF HAS EXTERNAL POWER  
 
-#define PIN_CHG_ON   GPIO_NUM_15 // SET HIGH TO ENABLE CHARGER
+#define PIN_LED      GPIO_NUM_2  // LED and BOOT MODE
 #define PIN_CS_SD    GPIO_NUM_26 // SD CHIP SELECT
+#define PIN_CHG_ON   GPIO_NUM_27 // SET HIGH TO ENABLE CHARGER
 
-#define PIN_BT_L GPIO_NUM_12
-#define PIN_BT_C GPIO_NUM_13
-#define PIN_BT_R GPIO_NUM_14
 
 const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
 const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
@@ -64,11 +62,6 @@ void setup()
     	; // wait for serial port to connect.
   	}
 	Serial.println("-------- BOOT SUCCESS --------");
-
-	// Buttons test
-	pinMode(PIN_BT_L, INPUT_PULLUP);
-	pinMode(PIN_BT_C, INPUT_PULLUP);
-	pinMode(PIN_BT_R, INPUT_PULLUP);
 
 	// Indicate that I'm alive
 	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
