@@ -83,7 +83,7 @@ void setup()
 	initDisplay();
 
 	// indexText("/books/japanese_homes.txt", display, fileManager);
-	textIndex.configure({480, 760, 1000});
+	textIndex.configure({480, 760, 0, false});
 	File pagesDirFile = textIndex.generateIdx("/books/water.txt");
 
 	// TODO: Temp: showing random page
@@ -91,7 +91,7 @@ void setup()
 	uint8_t randFileIdxNum = random(0, dirIndex.size());
 	FileIndex randFileIdx  = dirIndex.byIndex(randFileIdxNum);
 
-	Serial.println("----- File Index Data ------");
+	Serial.println("--- File Index Data ---");
 	Serial.println(randFileIdx.getPath());
 
 	File randomPageFile = fileManager.openFile(randFileIdx.getPath(), FILE_READ);

@@ -147,6 +147,51 @@ bool FileManager::writeFile(const char *path, const char *message)
     return result;
 }
 
+void FileManager::removeDirRecursive(const char *path)
+{
+    File root = fs.open(path);
+
+    Serial.printf("Attempt for recursively remove directory: %s\n", path);
+    if (!root)
+    {
+        Serial.println("Failed to open directory");
+        return;
+    }
+
+    if (!root.isDirectory())
+    {
+        Serial.println("Not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while (file)
+    {
+        if (file.isDirectory())
+        {
+            // Recursively delete contents of this directory
+            removeDirRecursive(file.path());
+            // Remove the directory itself after its contents are deleted
+            fs.rmdir(file.path());
+            Serial.printf("Deleted directory: %s\n", file.path());
+        }
+        else
+        {
+            // It's a file, delete it
+            fs.remove(file.path());
+            Serial.printf("Deleted file: %s\n", file.path());
+        }
+        // Move to the next file or directory in the folder
+        file.close();
+        file = root.openNextFile();
+    }
+
+    // Once all files and folders are deleted, delete the root directory itself
+    root.close();
+    fs.rmdir(path);
+    Serial.printf("Deleted root directory: %s\n", path);
+}
+
 void FileManager::listDir(const char *dirname, uint8_t levels)
 {
     Serial.printf("Listing directory: %s\n", dirname);

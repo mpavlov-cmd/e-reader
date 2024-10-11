@@ -10,6 +10,7 @@ struct TextIndexConf {
     const uint16_t textW;
     const uint16_t textH;
     const uint16_t pageLim;
+    const bool forceIndex;
 };
 
 struct TextIndex {
@@ -36,6 +37,7 @@ struct TextIndex {
         bool skipLeadingSpaces = true;  // Skip leading spaces on new lines
         bool wrappedLine       = false; // Track if the last line was wrapped
         bool spaceAfterWrap    = false; 
+        bool forceIndex        = false;
 
         uint16_t lineIndex = 0;
         uint16_t pageIndex = 0;

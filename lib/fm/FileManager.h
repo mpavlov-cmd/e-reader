@@ -89,10 +89,27 @@ public:
      */
     bool writeFile(const char *path, const char *message);
 
+    /**
+     * Creates directory under specified path
+     * @param path
+     */
+    void createDir(const char *path);
+
+    /**
+     * Removes empty directory under specified path;
+     * @param path
+    */
+    void removeDir(const char *path);
+
+     /**
+     * Removes directory and all its contents under specified path, 
+     * @param path
+    */
+    void removeDirRecursive(const char *path);
+
+
     // TODO: Here as an example. Review what's needed
     void listDir(const char *dirname, uint8_t levels);
-    void createDir(const char *path);
-    void removeDir(const char *path);
     void readFile(const char *path);
     void appendFile(const char *path, const char *message);
     void renameFile(const char *path1, const char *path2);

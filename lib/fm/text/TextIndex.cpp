@@ -31,12 +31,19 @@ File TextIndex::generateIdx(const char *path)
     String idxDirPathCopy = idxDirPath;
 	const char* idxDirPathCharArr = idxDirPathCopy.c_str();
 
-    // TODO: if directory exists do not index, just return it
-	if (!fm.exists(idxDirPathCharArr)) {
-		Serial.printf("Creating directory: %s\n", idxDirPathCharArr);
-		fm.createDir(idxDirPathCharArr);
+    // If direectory exists, consider index complete and return
+	bool dirExists = fm.exists(idxDirPathCharArr);
+	if (dirExists) {
+		if (forceIndex) {
+			fm.removeDirRecursive(idxDirPathCharArr);
+		} else { 
+			Serial.printf("Index for %s already exists, returning dir: %s\n", filename, idxDirPathCharArr);
+			return fm.openFile(idxDirPath.c_str(), FILE_READ);
+		}
+		
 	}
 
+	fm.createDir(idxDirPathCharArr);
 	Serial.printf("Idx directory path: %s\n", idxDirPathCharArr);
 
     // ---------------- Start indexing ----------------
@@ -126,26 +133,28 @@ File TextIndex::generateIdx(const char *path)
 		}
 
 		if (lineIndex >= linesPerPage) {
-            // TODO: move to function, duplicate code
+			// Creating page file on SD card
 			String pageFileName = idxDirPath + "/._" + String(pageIndex) + ".page.txt";
 			bool pageFileWritten = fm.writeFile(pageFileName.c_str(), currentPage.c_str());
             if (!pageFileWritten) {
                 Serial.println("Error creating page file");
             }
 			
+			// Drop current page, so next is processed
 			currentPage = "";
 			pageIndex++;
 			lineIndex = currentLine.isEmpty() ? 0 : 1;
 		}
 
-        // TODO: if pageLimit is zero do not break until file is available
-		if (pageIndex > pageLimit) {
+		// Only check for page limit in case it has value different than
+		if (pageLimit != 0 && pageIndex > pageLimit) {
             Serial.printf("Page limit of %i exceeded\n", pageLimit);
 			break;
 		}
 	}
 
     // TODO: Check if there are cases when current line is not emplty, and so generate additional page
+
     // if (!currentLine.isEmpty())
 	// {
 	// 	currentPage.concat(currentLine);
@@ -163,6 +172,7 @@ void TextIndex::configure(TextIndexConf conf)
     textAreaWidth = conf.textW;
     textAreaHeight = conf.textH;
     pageLimit = conf.pageLim;
+	forceIndex = conf.forceIndex;
 
     // Get Space width
 	display.getTextBounds("s w", 0, 0, &x, &y, &width, &height);
