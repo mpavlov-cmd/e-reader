@@ -25,28 +25,30 @@
 #include <ImageDrawer.h>
 #include <text/TextIndex.h>
 
+#define PIN_LED      GPIO_NUM_2  // LED and BOOT MODE
+
+#define PIN_PWR_DET  GPIO_NUM_25 // CHECK IF HAS EXTERNAL POWER  
+#define PIN_BAT_STAT GPIO_NUM_26 // ANALOG BATTEY PERCENT 
+#define PIN_CS_SD    GPIO_NUM_27 // SD CHIP SELECT
 
 #define PIN_CHG_DET  GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
-#define PIN_BAT_STAT GPIO_NUM_36 // (SENSOR_VP) ANALOG BATTEY PERCENT 
-#define PIN_PWR_DET  GPIO_NUM_39 // (SENSOR_VN) CHECK IF HAS EXTERNAL POWER  
 
-#define PIN_LED      GPIO_NUM_2  // LED and BOOT MODE
-#define PIN_CS_SD    GPIO_NUM_26 // SD CHIP SELECT
-#define PIN_CHG_ON   GPIO_NUM_27 // SET HIGH TO ENABLE CHARGER
-
+// PIN Definitions for input
+#define BT_INPUT_0 GPIO_NUM_36 // SENSOR_VP PIN 4
+#define BT_INPUT_1 GPIO_NUM_39 // SENSOR_VN PIN 5
+#define BT_INPUT_2 GPIO_NUM_34 // SENSOR_VN PIN 6
 
 const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
 const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
 
 // put function declarations here
+void initInputs();
 void initDisplay();
 void blink(void *pvParameters);
 
-// put constant definitions here
-
 // service instantiation declarations 
 ESP32Time rtc(0);
-PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
+// PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
 FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
 
@@ -62,6 +64,9 @@ void setup()
     	; // wait for serial port to connect.
   	}
 	Serial.println("-------- BOOT SUCCESS --------");
+
+	// Init Inputs
+	initInputs();
 
 	// Indicate that I'm alive
 	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
@@ -143,6 +148,13 @@ void setup()
 void loop()
 {
 	// powerInd->refresh();
+}
+
+void initInputs()
+{
+	pinMode(BT_INPUT_0, INPUT);
+	pinMode(BT_INPUT_1, INPUT);
+	pinMode(BT_INPUT_2, INPUT);
 }
 
 void initDisplay()
