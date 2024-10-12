@@ -36,7 +36,7 @@
 // PIN Definitions for input
 #define BT_INPUT_0 GPIO_NUM_36 // SENSOR_VP PIN 4
 #define BT_INPUT_1 GPIO_NUM_39 // SENSOR_VN PIN 5
-#define BT_INPUT_2 GPIO_NUM_34 // SENSOR_VN PIN 6
+#define BT_INPUT_2 GPIO_NUM_34 // PIN 6 INPUT ONLY
 
 const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
 const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
@@ -185,5 +185,13 @@ void blink(void *pvParameters) {
 		vTaskDelay(250 / portTICK_RATE_MS);
 		digitalWrite(PIN_LED, LOW);
 		vTaskDelay(250 / portTICK_RATE_MS);
+		
+		// Print input status
+		Serial.printf(
+			"Input status: %i%i%i\n",
+			digitalRead(BT_INPUT_2),
+			digitalRead(BT_INPUT_1),
+			digitalRead(BT_INPUT_0)
+		);
 	}
 }
