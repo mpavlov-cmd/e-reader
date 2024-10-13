@@ -41,7 +41,13 @@
 const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
 const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
 
+volatile bool isrPending = false; 
+volatile unsigned long isrStartedAt = 0;
+volatile uint8_t isrInputCache   = 0; 
+volatile uint8_t isrInputCurrent = 0; 
+
 // put function declarations here
+void IRAM_ATTR isr();
 void initInputs();
 void initDisplay();
 void blink(void *pvParameters);
@@ -51,9 +57,6 @@ ESP32Time rtc(0);
 // PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
 FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
-
-// HomeIntent* homeIntent = nullptr;
-// PowerIndicator* powerInd = nullptr;
 
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
@@ -115,39 +118,35 @@ void setup()
 	do {
 		display.print(randomPage);
 	} while (display.nextPage());
-
-
-	// HomeIntent homeIntent(display, rtc);
-	// homeIntent.onStartUp();
-
-	// Get Random image for random() first argument inclusive, second exclusive
-	// DirIndex dirIndex = fileManager.indexDirectory("/background", {false, false, true, "bmp"});
-	// uint8_t randFileIndex = random(0, dirIndex.size());
-	// const char* randoomPath = dirIndex.byIndex(randFileIndex).getPath();
-
-	// // Create Image Viewer 
-	// File image = fileManager.openFile(randoomPath, FILE_READ);
-	// ImageDrawer imageDrawer(display);
-	// imageDrawer.drawBitmapFromSD_Buffered(image, 0, 100, false, false, false);
-
-	// // Power Indicator 
-	// PowerIndicator powerInd(display, powerStatus);
-	// powerInd.init();
-
-	// xTaskCreate(powerBatteryStatus, "powerBatteryStatus", 1000, NULL, 5, NULL);
-	// Sleep
-	// display.hibernate();
-
-	for (;;) {
-		// // homeIntent.onFrequncy(10);
-	 	// powerInd.refresh();
-		// delay(5000);
-	}
 }
 
 void loop()
 {
-	// powerInd->refresh();
+	if (isrPending) {
+		isrInputCurrent = (digitalRead(BT_INPUT_2) << 2) | (digitalRead(BT_INPUT_1) << 1) | digitalRead(BT_INPUT_0);
+
+		if (isrInputCurrent == 0b00000111 || millis() - isrStartedAt > 2500) {
+			// Print Value
+			// for (int i = 7; i >= 0; i--) {
+			// 	// Print each bit starting from the most significant bit
+			// 	Serial.print(bitRead(isrInputCache, i));  
+			// }
+			Serial.println(isrInputCache, BIN);
+			isrPending = false;
+		} else {
+			isrInputCache = isrInputCurrent;
+		}
+	}
+}
+
+void IRAM_ATTR isr()
+{
+	if (isrPending) {
+		return;
+	}
+
+	isrStartedAt = millis();
+	isrPending = true;
 }
 
 void initInputs()
@@ -155,6 +154,10 @@ void initInputs()
 	pinMode(BT_INPUT_0, INPUT);
 	pinMode(BT_INPUT_1, INPUT);
 	pinMode(BT_INPUT_2, INPUT);
+
+	attachInterrupt(BT_INPUT_0, isr, FALLING);
+	attachInterrupt(BT_INPUT_1, isr, FALLING);
+	attachInterrupt(BT_INPUT_2, isr, FALLING);
 }
 
 void initDisplay()
