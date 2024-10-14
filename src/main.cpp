@@ -43,14 +43,18 @@ const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
 
 volatile bool isrPending = false; 
 volatile unsigned long isrStartedAt = 0;
-volatile uint8_t isrInputCache   = 0; 
-volatile uint8_t isrInputCurrent = 0; 
+
+unsigned long isrLastReturn = 0;
+uint8_t isrInputCache   = 0; 
+uint8_t isrInputCurrent = 0; 
+bool isrInputHeld = false;
 
 // put function declarations here
 void IRAM_ATTR isr();
 void initInputs();
 void initDisplay();
 void blink(void *pvParameters);
+uint8_t handleInput();
 
 // service instantiation declarations 
 ESP32Time rtc(0);
@@ -122,20 +126,9 @@ void setup()
 
 void loop()
 {
-	if (isrPending) {
-		isrInputCurrent = (digitalRead(BT_INPUT_2) << 2) | (digitalRead(BT_INPUT_1) << 1) | digitalRead(BT_INPUT_0);
-
-		if (isrInputCurrent == 0b00000111 || millis() - isrStartedAt > 2500) {
-			// Print Value
-			// for (int i = 7; i >= 0; i--) {
-			// 	// Print each bit starting from the most significant bit
-			// 	Serial.print(bitRead(isrInputCache, i));  
-			// }
-			Serial.println(isrInputCache, BIN);
-			isrPending = false;
-		} else {
-			isrInputCache = isrInputCurrent;
-		}
+	uint8_t switchInput = handleInput();
+	if (switchInput) {
+		Serial.println(switchInput, BIN);
 	}
 }
 
@@ -188,13 +181,54 @@ void blink(void *pvParameters) {
 		vTaskDelay(250 / portTICK_RATE_MS);
 		digitalWrite(PIN_LED, LOW);
 		vTaskDelay(250 / portTICK_RATE_MS);
-		
-		// Print input status
-		Serial.printf(
-			"Input status: %i%i%i\n",
-			digitalRead(BT_INPUT_2),
-			digitalRead(BT_INPUT_1),
-			digitalRead(BT_INPUT_0)
-		);
 	}
+}
+
+
+uint8_t handleInput()
+{
+    if (!isrPending) {
+		return 0;
+	}
+
+	if (millis() - isrLastReturn < 100) {
+		if (!isrInputHeld) {
+			// Drop chache to avoid returning value appeared during debounce
+			isrInputCache = 0;
+		}
+		return 0;
+	}
+
+	isrInputCurrent = (digitalRead(BT_INPUT_2) << 2) | (digitalRead(BT_INPUT_1) << 1) | digitalRead(BT_INPUT_0);
+
+	if (isrInputCurrent == B00000111) {
+
+		// Only handle next ISR when button was released
+		if (isrInputHeld) {
+			isrInputHeld = false;
+			isrPending   = false;
+			return 0;
+		}
+
+		isrLastReturn = millis();
+		isrPending     = false;
+		return isrInputCache;
+	} else {
+
+		if (millis() - isrStartedAt > 2500) {
+			isrInputHeld  = true;
+			isrLastReturn = millis();
+			return isrInputCache | B00010000;
+		}
+
+		// In case value is 0, set bit 3
+		// Chanhe latest non-terminating value
+		if (isrInputCurrent == B00000000) {
+			isrInputCurrent = isrInputCurrent | B00001000;
+		}
+
+		isrInputCache = isrInputCurrent;
+	}
+
+	return 0;
 }
