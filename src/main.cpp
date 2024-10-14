@@ -24,6 +24,7 @@
 #include <FileManager.h>
 #include <ImageDrawer.h>
 #include <text/TextIndex.h>
+#include <SwithInputHandler.h>
 
 #define PIN_LED      GPIO_NUM_2  // LED and BOOT MODE
 
@@ -44,36 +45,28 @@ const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
 volatile bool isrPending = false; 
 volatile unsigned long isrStartedAt = 0;
 
-unsigned long isrLastReturn = 0;
-uint8_t isrInputCache   = 0; 
-uint8_t isrInputCurrent = 0; 
-bool isrInputHeld = false;
-
 // put function declarations here
 void IRAM_ATTR isr();
-void initInputs();
 void initDisplay();
 void blink(void *pvParameters);
-uint8_t handleInput();
 
 // service instantiation declarations 
 ESP32Time rtc(0);
-// PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
 FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
+SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
+
+// PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
 
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
 void setup()
 {
 	Serial.begin(115200);
-	while (!Serial) {
-    	; // wait for serial port to connect.
-  	}
 	Serial.println("-------- BOOT SUCCESS --------");
 
 	// Init Inputs
-	initInputs();
+	inputHandler.configure(isr, 100, 2500);
 
 	// Indicate that I'm alive
 	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
@@ -126,7 +119,7 @@ void setup()
 
 void loop()
 {
-	uint8_t switchInput = handleInput();
+	uint8_t switchInput = inputHandler.handleInput(isrPending, isrStartedAt);
 	if (switchInput) {
 		Serial.println(switchInput, BIN);
 	}
@@ -140,17 +133,6 @@ void IRAM_ATTR isr()
 
 	isrStartedAt = millis();
 	isrPending = true;
-}
-
-void initInputs()
-{
-	pinMode(BT_INPUT_0, INPUT);
-	pinMode(BT_INPUT_1, INPUT);
-	pinMode(BT_INPUT_2, INPUT);
-
-	attachInterrupt(BT_INPUT_0, isr, FALLING);
-	attachInterrupt(BT_INPUT_1, isr, FALLING);
-	attachInterrupt(BT_INPUT_2, isr, FALLING);
 }
 
 void initDisplay()
@@ -182,53 +164,4 @@ void blink(void *pvParameters) {
 		digitalWrite(PIN_LED, LOW);
 		vTaskDelay(250 / portTICK_RATE_MS);
 	}
-}
-
-
-uint8_t handleInput()
-{
-    if (!isrPending) {
-		return 0;
-	}
-
-	if (millis() - isrLastReturn < 100) {
-		if (!isrInputHeld) {
-			// Drop chache to avoid returning value appeared during debounce
-			isrInputCache = 0;
-		}
-		return 0;
-	}
-
-	isrInputCurrent = (digitalRead(BT_INPUT_2) << 2) | (digitalRead(BT_INPUT_1) << 1) | digitalRead(BT_INPUT_0);
-
-	if (isrInputCurrent == B00000111) {
-
-		// Only handle next ISR when button was released
-		if (isrInputHeld) {
-			isrInputHeld = false;
-			isrPending   = false;
-			return 0;
-		}
-
-		isrLastReturn = millis();
-		isrPending     = false;
-		return isrInputCache;
-	} else {
-
-		if (millis() - isrStartedAt > 2500) {
-			isrInputHeld  = true;
-			isrLastReturn = millis();
-			return isrInputCache | B00010000;
-		}
-
-		// In case value is 0, set bit 3
-		// Chanhe latest non-terminating value
-		if (isrInputCurrent == B00000000) {
-			isrInputCurrent = isrInputCurrent | B00001000;
-		}
-
-		isrInputCache = isrInputCurrent;
-	}
-
-	return 0;
 }
