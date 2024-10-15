@@ -1,5 +1,6 @@
 // Pass display as parameter
 #define ENABLE_GxEPD2_GFX 1
+#define CONFIG_FREERTOS_USE_TRACE_FACILITY 1
 
 #include <Arduino.h>
 
@@ -48,15 +49,21 @@ volatile unsigned long isrStartedAt = 0;
 // put function declarations here
 void IRAM_ATTR isr();
 void initDisplay();
-void blink(void *pvParameters);
+void blink(void* pvParameters);
+void taskWrapper(void* pvParameters);
 
-// service instantiation declarations 
+// service instantiation 
 ESP32Time rtc(0);
 FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
 SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
-
+ImageDrawer imageDrawer(display);
+HomeIntent homeIntent(display, rtc, fileManager, imageDrawer);
 // PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
+
+// Task handle for intent refresh
+TaskHandle_t taskHandle;
+TaskStatus_t xTaskDetails;
 
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
@@ -65,63 +72,35 @@ void setup()
 	Serial.begin(115200);
 	Serial.println("-------- BOOT SUCCESS --------");
 
-	// Init Inputs
-	inputHandler.configure(isr, 100, 2500);
-
 	// Indicate that I'm alive
 	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
 
-	// Set Time
+	// Init Inputs and 
+	inputHandler.configure(isr, 100, 2500);
 	rtc.setTime(0, 0, 0, 15, 9, 2024);
 
-	// Init File Manager
 	fileManager.begin();
-
-	// Init Display
 	initDisplay();
 
-	// indexText("/books/japanese_homes.txt", display, fileManager);
-	textIndex.configure({480, 760, 0, false});
-	File pagesDirFile = textIndex.generateIdx("/books/water.txt");
-
-	// TODO: Temp: showing random page
-	unsigned long startIndexMills = millis();
-	Serial.println("--- Index Dir Start ---"); 
-	DirIndex dirIndex = fileManager.indexDirectory(pagesDirFile.path(), {false, true, true, "txt"});
-	Serial.printf("Index dir ended in %i\n", millis() - startIndexMills);
-	
-	uint8_t randFileIdxNum = random(0, dirIndex.size());
-	FileIndex randFileIdx  = dirIndex.byIndex(randFileIdxNum);
-	Serial.println("--- File Index Data ---");
-	Serial.println(randFileIdx.getPath());
-
-	File randomPageFile = fileManager.openFile(randFileIdx.getPath(), FILE_READ);
-	String randomPage = "";
-	while (randomPageFile.available())
-	{
-		char tc = randomPageFile.read();
-		randomPage.concat(tc);
-	}
-	
-	randomPageFile.close();
-	pagesDirFile.close();
-
-	Serial.println("Page:");
-	Serial.println(randomPage);
-
-	display.setFullWindow();
-	display.setCursor(0, 20);
-	display.firstPage();
-	do {
-		display.print(randomPage);
-	} while (display.nextPage());
+	homeIntent.onStartUp();
+	xTaskCreatePinnedToCore(taskWrapper, "clock", 2048, NULL, 1, &taskHandle, 0);
 }
 
 void loop()
 {
 	uint8_t switchInput = inputHandler.handleInput(isrPending, isrStartedAt);
 	if (switchInput) {
+
 		Serial.println(switchInput, BIN);
+		eTaskState state = eTaskGetState(taskHandle);
+		Serial.println(state);
+
+		if (state != eSuspended) {
+			vTaskSuspend(taskHandle);
+		} else {
+			vTaskResume(taskHandle);
+		}
+		
 	}
 }
 
@@ -163,5 +142,14 @@ void blink(void *pvParameters) {
 		vTaskDelay(250 / portTICK_RATE_MS);
 		digitalWrite(PIN_LED, LOW);
 		vTaskDelay(250 / portTICK_RATE_MS);
+	}
+}
+
+void taskWrapper(void *pvParameters)
+{
+	for(;;) {
+		// Serial.println("Clock Task");
+		homeIntent.onFrequncy();
+		vTaskDelay(500 / portTICK_RATE_MS);
 	}
 }

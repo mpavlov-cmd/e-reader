@@ -5,7 +5,7 @@ ImageDrawer::ImageDrawer(GxEPD2_GFX &display) : display(display)
 }
 
 void ImageDrawer::drawBitmapFromSD_Buffered(
-    File& file, int16_t x, int16_t y, bool with_color, bool partial_update, bool overwrite)
+    File& file, int16_t x, int16_t y, bool with_color, bool partial_update)
 {
     bool valid = false;  // valid format to be handled
     bool flip  = true;   // bitmap is stored bottom-to-top
@@ -104,6 +104,14 @@ void ImageDrawer::drawBitmapFromSD_Buffered(
                         rgb_palette_buffer[pn] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ((blue & 0xF8) >> 3);
                     }
                 }
+                // Center image in case position is not selected
+                if (x == 0 && y == 0) {
+                    x = (display.width() - width) / 2;
+                    y = (display.height() - height) / 2;
+                }
+
+                Serial.printf("Image start coordinates x: %i, y: %i\n", x, y);
+
                 if (partial_update) {
                     display.setPartialWindow(x, y, w, h);
                 }
@@ -114,7 +122,6 @@ void ImageDrawer::drawBitmapFromSD_Buffered(
                 display.firstPage();
                 do
                 {
-                    // if (!overwrite) display.fillScreen(GxEPD_WHITE);
                     uint32_t rowPosition = flip ? imageOffset + (height - h) * rowSize : imageOffset;
                     for (uint16_t row = 0; row < h; row++, rowPosition += rowSize) // for each line
                     {
@@ -229,7 +236,7 @@ void ImageDrawer::drawBitmapFromSD_Buffered(
     file.close();
     if (!valid)
     {
-        Serial.println("bitmap format not handled.");
+        Serial.println("Bitmap format not handled.");
     }
 }
 

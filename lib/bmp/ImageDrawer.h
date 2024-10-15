@@ -35,8 +35,7 @@ struct ImageDrawer
             int16_t x,
             int16_t y,
             bool with_color,
-            bool partial_update,
-            bool overwrite
+            bool partial_update
         );
 
 };

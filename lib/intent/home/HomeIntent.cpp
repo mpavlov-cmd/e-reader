@@ -2,11 +2,10 @@
 
 
 HomeIntent::HomeIntent(
-    GxEPD2_GFX& display, ESP32Time &espTime
-) : AbstractDisplayIntent(display), espTime(espTime)
+    GxEPD2_GFX& display, ESP32Time &espTime, FileManager& fm, ImageDrawer& idrawer
+) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm), imageDrawer(idrawer)
 {
-    // Fill clock coordinates array on startup
-    initClockCoordinates();
+
 }
 
 String HomeIntent::getName()
@@ -16,16 +15,14 @@ String HomeIntent::getName()
 
 void HomeIntent::onStartUp()
 {
-	display.firstPage();
-    do {
-		for (uint8_t i = 0; i < 6; i++) {
-			display.drawRect(clockBoxXY[i][0], clockBoxXY[i][1], framew, frameh, GxEPD_BLACK);
-		}
-	} while (display.nextPage());
-   
+	// Fill clock coordinates array on startup
+    initClockCoordinates();
+
+	File file = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
+	imageDrawer.drawBitmapFromSD_Buffered(file, 0, 0, false, false);
 }
 
-void HomeIntent::onFrequncy(uint32_t freqMills)
+void HomeIntent::onFrequncy()
 {
     display.setPartialWindow(startX, startY, totalW, totalH);
 
@@ -37,34 +34,27 @@ void HomeIntent::onFrequncy(uint32_t freqMills)
 	dt.setValue(espTime.getYear()%100, IDX_YEAR);
 
 	uint8_t mask = dt.getMask();
-	for (uint8_t i = 0; i < 6; i++)
-    {
-		uint8_t changed = bitRead(mask, i);
-		if (changed == 0) {
-			continue;
-		}
-
-		char printVal[3];
-        sprintf(printVal, "%02d", dt.byIndex(i));
-
-		// do
-		// {
-		// 	display.fillRect(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
-		// 	display.setCursor(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + tbh + 1);
-		// 	display.print(printVal);
-		// } while (display.nextPage());	
-	}
 
 	display.firstPage();
 	do
 	{
-		// display.fillRect(clockBoxXY[2][0] + 1, clockBoxXY[2][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
-		display.setCursor(clockBoxXY[2][0] + 1, clockBoxXY[2][1] + tbh + 1);
-		display.print(random(0, 9));
+		for (uint8_t i = 0; i < 6; i++)
+		{
+			uint8_t changed = bitRead(mask, i);
+			if (changed == 0)
+			{
+				// continue;
+			}
+
+			char printVal[3];
+			sprintf(printVal, "%02d", dt.byIndex(i));
+
+			display.fillRect(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
+			display.setCursor(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + tbh + 1);
+			display.print(printVal);
+		}
 	} while (display.nextPage());
-
 	dt.flushMask();	
-
 }
 
 void HomeIntent::onAction(uint16_t actionId)

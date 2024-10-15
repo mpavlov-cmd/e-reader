@@ -6,12 +6,16 @@
 #include <AbstractDisplayIntent.h>
 #include <DateTimeRtc.h>
 #include <ESP32Time.h>
+#include <FileManager.h>
+#include <ImageDrawer.h>
 
 struct HomeIntent : public AbstractDisplayIntent
 {
     private:
         // ESP Time should be passed through comnstructor
-        ESP32Time espTime;
+        ESP32Time& espTime;
+        FileManager& fileManager;
+        ImageDrawer& imageDrawer;
 
         // Constant declaration
         const String NAME = "Home Intent";
@@ -29,11 +33,11 @@ struct HomeIntent : public AbstractDisplayIntent
         void initClockCoordinates();
 
     public:
-        HomeIntent(GxEPD2_GFX& display, ESP32Time &espTime);
+        HomeIntent(GxEPD2_GFX& display, ESP32Time& espTime, FileManager& fm, ImageDrawer& idrawer);
 
         String getName() override;
         void onStartUp() override;
-        void onFrequncy(uint32_t freqMills) override;
+        void onFrequncy() override;
         void onAction(uint16_t actionId) override;
         void onExit() override;
 };
