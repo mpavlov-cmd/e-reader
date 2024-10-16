@@ -1,5 +1,6 @@
 #include "HomeIntent.h"
-
+#include <menu/Menu.h>
+#include <menu/MenuDrawer.h>
 
 HomeIntent::HomeIntent(
     GxEPD2_GFX& display, ESP32Time &espTime, FileManager& fm, ImageDrawer& idrawer
@@ -18,8 +19,24 @@ void HomeIntent::onStartUp()
 	// Fill clock coordinates array on startup
     initClockCoordinates();
 
+	// Draw Background
 	File file = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
 	imageDrawer.drawBitmapFromSD_Buffered(file, 0, 0, false, false);
+
+	// Draw Main Menu
+	Box menuBox(48, 512, 384, 256, 0, 0);
+	Menu menu(menuBox, false);
+
+	MenuItem* booksItem = new MenuItem(1, "Books");
+	booksItem->setIsActive(true);
+
+	menu.addItem(booksItem);
+	menu.addItem(new MenuItem(2, "Settings"));
+	menu.addItem(new MenuItem(3, "Other"));
+
+	// TODO: move to dependency  
+	MenuDrawer menuDrawer(display);
+	menuDrawer.drawMenu(menu);
 }
 
 void HomeIntent::onFrequncy()

@@ -44,13 +44,11 @@ public:
     uint16_t size();
 
     DirIndex() {
-        Serial.println("--- Start index space allocation ---");
         fileIndexArray = new FileIndex*[CAPACITY];
         index = 0;
         for (int i = 0; i < CAPACITY; ++i) {
             fileIndexArray[i] = nullptr;
         }
-        Serial.println("--- Finished index space allocation ---");
     }
 
     ~DirIndex()

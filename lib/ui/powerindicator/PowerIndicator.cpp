@@ -33,7 +33,7 @@ void PowerIndicator::refresh()
 {
     
     // display.setPartialWindow(widgetStartX, 0, widgetTotalWidth, batteryBox->hght());
-    display.setPartialWindow(0, 0, display.width(), batteryBox->hght());
+    display.setPartialWindow(0, 0, display.width(), batteryBox->getHeight());
     display.firstPage();
     do {
         // Clear display
@@ -50,10 +50,10 @@ void PowerIndicator::refresh()
             }
 
             display.drawBitmap(
-                pluggedBox->x(),
-                pluggedBox->y(),
+                pluggedBox->getX(),
+                pluggedBox->getY(),
                 icon,
-                pluggedBox->wdth(),
+                pluggedBox->getWidth(),
                 12,
                 GxEPD_BLACK
             );
@@ -63,13 +63,13 @@ void PowerIndicator::refresh()
         uint8_t levelPercent = powerStatus.getBatteryLevelPercent();
         snprintf(resultBuffer, sizeof(resultBuffer), "%3d%%", levelPercent);
 
-        display.setCursor(batteryBox->x(), 0 + batteryBox->hght() - 1);
+        display.setCursor(batteryBox->getX(), 0 + batteryBox->getHeight() - 1);
         display.print(resultBuffer);
 
-        display.setCursor(0, 0 + batteryBox->hght() - 1);
+        display.setCursor(0, 0 + batteryBox->getHeight() - 1);
         display.print(powerStatus.getBatteryVoltage());
 
-        display.setCursor(50, 0 + batteryBox->hght() - 1);
+        display.setCursor(50, 0 + batteryBox->getHeight() - 1);
         display.print(powerStatus.getVoltageDuringMeasuring());
 
     } while (display.nextPage());

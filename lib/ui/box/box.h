@@ -6,8 +6,8 @@
 struct Box
 {
     private:
-        const int16_t topLeftCornerX;
-        const int16_t topLeftCornerY;
+        const int16_t x;
+        const int16_t y;
         const uint16_t width;
         const uint16_t height;
         const uint8_t padding;
@@ -15,20 +15,20 @@ struct Box
 
     public:
         Box(
-            const int16_t topLeftCornerX,
-            const int16_t topLeftCornerY,
-            const uint16_t width,
-            const uint16_t height, 
-            const uint8_t padding,
-            const uint8_t border
+            const int16_t cX,
+            const int16_t cY,
+            const uint16_t boxWidth,
+            const uint16_t boxHeight, 
+            const uint8_t boxPadding,
+            const uint8_t boxBorder
         );
 
-        int16_t x(); 
-        int16_t y(); 
-        uint16_t wdth();
-        uint16_t hght();
-        uint8_t pad();
-        uint8_t brd();
+        int16_t getX(); 
+        int16_t getY(); 
+        uint16_t getWidth();
+        uint16_t getHeight();
+        uint8_t getPadding();
+        uint8_t getBorder();
 };
 
 
