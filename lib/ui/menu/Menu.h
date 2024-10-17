@@ -21,7 +21,13 @@ struct Menu
         bool addItem(MenuItem* menuItem);
         bool removeLastItem();
 
-        MenuItem getItem(uint16_t idx);
+        /**
+         * Returns reference to the menu item, so it can be modified
+         * 
+         * @param idx of the target menu item
+         * @returns MenuItem pointer 
+         */
+        MenuItem* getItem(uint16_t idx);
         uint16_t size();
 
         Box getBox();

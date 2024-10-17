@@ -58,7 +58,8 @@ FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
 SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
-HomeIntent homeIntent(display, rtc, fileManager, imageDrawer);
+MenuDrawer menuDrawer(display);
+HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuDrawer);
 // PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
 
 // Task handle for intent refresh
@@ -92,15 +93,15 @@ void loop()
 	if (switchInput) {
 
 		Serial.println(switchInput, BIN);
-		eTaskState state = eTaskGetState(taskHandle);
-		Serial.println(state);
+		homeIntent.onAction(switchInput);
+		// eTaskState state = eTaskGetState(taskHandle);
+		// Serial.println(state);
 
-		if (state != eSuspended) {
-			vTaskSuspend(taskHandle);
-		} else {
-			vTaskResume(taskHandle);
-		}
-		
+		// if (state != eSuspended) {
+		// 	vTaskSuspend(taskHandle);
+		// } else {
+		// 	vTaskResume(taskHandle);
+		// }
 	}
 }
 

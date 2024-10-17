@@ -12,7 +12,7 @@ void MenuDrawer::drawMenu(Menu &menu)
     }
 
     // Init Text bounds
-    display.getTextBounds(menu.getItem(0).getName(), 0, 0, &x, &y, &width, &height);
+    display.getTextBounds(menu.getItem(0)->getName(), 0, 0, &x, &y, &width, &height);
 
     Box mB = menu.getBox();
     Box* activeBox = new Box(0, 0, height - 2, height - 2, 0, 0);
@@ -41,7 +41,7 @@ void MenuDrawer::drawMenu(Menu &menu)
         display.drawRect(mB.getX(), mB.getY(), mB.getWidth(), mB.getHeight(), GxEPD_BLACK);
         for (uint16_t i = 0; i < menu.size(); i++)
         {
-            MenuItem mi = menu.getItem(i);
+            MenuItem mi = *menu.getItem(i);
             boxColor = mi.getIsActive() ? GxEPD_BLACK : GxEPD_WHITE;
 
             // Text starts from bottom left corner of the cursor

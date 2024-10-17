@@ -8,14 +8,19 @@
 #include <ESP32Time.h>
 #include <FileManager.h>
 #include <ImageDrawer.h>
+#include <menu/MenuDrawer.h>
+#include <menu/Menu.h>
 
 struct HomeIntent : public AbstractDisplayIntent
 {
     private:
-        // ESP Time should be passed through comnstructor
         ESP32Time& espTime;
         FileManager& fileManager;
         ImageDrawer& imageDrawer;
+        MenuDrawer& menuDrawer;
+
+        // Main menu
+        Menu* menu;
 
         // Constant declaration
         const String NAME = "Home Intent";
@@ -31,9 +36,11 @@ struct HomeIntent : public AbstractDisplayIntent
         
 
         void initClockCoordinates();
+        void switchActiveMenu(bool direction);
 
     public:
-        HomeIntent(GxEPD2_GFX& display, ESP32Time& espTime, FileManager& fm, ImageDrawer& idrawer);
+        HomeIntent(GxEPD2_GFX& display, ESP32Time& espTime,
+            FileManager& fm, ImageDrawer& idrawer, MenuDrawer& menuDrawer);
 
         String getName() override;
         void onStartUp() override;

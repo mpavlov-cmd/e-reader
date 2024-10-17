@@ -27,6 +27,9 @@ uint8_t SwithInputHandler::handleInput(volatile bool& isrPending, volatile unsig
 		return 0;
 	}
 
+	// Assure retval is dropped to defauly 
+	isrRetVal = 0;
+	
 	if (millis() - isrLastReturn < debounseThresholdMills) {
 		if (!isrInputHeld) {
 			// Drop chache to avoid returning value appeared during debounce
@@ -48,7 +51,12 @@ uint8_t SwithInputHandler::handleInput(volatile bool& isrPending, volatile unsig
 
 		isrLastReturn = millis();
 		isrPending    = false;
-		return isrInputCache;
+
+		// Make sure on the next iteration cache is clear
+		isrRetVal = isrInputCache;
+		isrInputCache = 0;
+
+		return isrRetVal;
 	} else {
 
 		if (millis() - isrStartedAt > holdThresholdMills) {

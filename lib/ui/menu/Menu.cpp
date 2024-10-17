@@ -22,16 +22,14 @@ bool Menu::addItem(MenuItem *menuItem)
     return true;
 }
 
-MenuItem Menu::getItem(uint16_t idx)
+MenuItem* Menu::getItem(uint16_t idx)
 {
     if (idx >= CAPACITY) {
         Serial.println("Error, index out of capacity");
-        MenuItem emptyItem;
-        return emptyItem;
+        return nullptr;
     }
 
-    MenuItem* mi = menuItemsArray[idx];
-    return *mi;
+    return menuItemsArray[idx];
 }
 
 bool Menu::removeLastItem()
