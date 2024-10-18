@@ -21,8 +21,10 @@ struct MenuDrawer
          * Current implementation would re-draw the entire menu every time method is called
          * 
          * @param menu menu object to draw
+         * @param box to draw menu at
+         * @param fullWindow weather full or partial window should be used
          */
-        void drawMenu(Menu& menu);
+        void drawMenu(Menu& menu, Box& box, bool fullWindow = false);
 };
 
 

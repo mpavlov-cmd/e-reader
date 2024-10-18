@@ -1,10 +1,11 @@
 #include "HomeIntent.h"
+#include <ButtonActions.h>
 
 HomeIntent::HomeIntent(
     GxEPD2_GFX& display, ESP32Time &espTime, FileManager& fm, ImageDrawer& idrawer, MenuDrawer& menuDrawer
-) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm), imageDrawer(idrawer), menuDrawer(menuDrawer)
+) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm),
+	imageDrawer(idrawer), menuDrawer(menuDrawer)
 {
-
 }
 
 String HomeIntent::getName()
@@ -21,18 +22,17 @@ void HomeIntent::onStartUp()
 	File file = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
 	imageDrawer.drawBitmapFromSD_Buffered(file, 0, 0, false, false);
 
-	// Draw Main Menu
-	Box menuBox(48, 512, 384, 256, 0, 0);
-	menu = new Menu(menuBox, false);
-
+	// Fill menu
 	MenuItem* booksItem = new MenuItem(1, "Books");
 	booksItem->setIsActive(true);
 
 	menu->addItem(booksItem);
 	menu->addItem(new MenuItem(2, "Settings"));
-	menu->addItem(new MenuItem(3, "Other"));
+	menu->addItem(new MenuItem(3, "Long item of the menu"));
+	menu->addItem(new MenuItem(4, "One more item for fun"));
+	menu->addItem(new MenuItem(5, "Other"));
 
-	menuDrawer.drawMenu(*menu);
+	menuDrawer.drawMenu(*menu, *menuBox, false);
 }
 
 void HomeIntent::onFrequncy()
@@ -73,14 +73,28 @@ void HomeIntent::onFrequncy()
 void HomeIntent::onAction(uint16_t actionId)
 {
 	Serial.printf("Inside of action: %i\n", actionId);
-	switchActiveMenu(true);
-	menuDrawer.drawMenu(*menu);
+
+	// Extract hold bit for easy use
+	bool held = false;
+	uint8_t action = controlDirection(actionId, held);
+
+	// Up or nown
+	if (action == BUTTON_ACTION_DOWN || action == BUTTON_ACTION_UP) {
+		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
+		menu->moveActiveItem(direction);
+		menuDrawer.drawMenu(*menu, *menuBox, false);
+		return;
+	}
+
+	if (action == B00001000) {
+		Serial.println("Enter clicked");
+	};
+	
 }
 
 void HomeIntent::onExit()
 {
 }
-
 
 void HomeIntent::initClockCoordinates()
 {
@@ -112,49 +126,4 @@ void HomeIntent::initClockCoordinates()
 		}
 	}
 
-}
-
-// TODO: store reference to active menu item, to avoid search
-void HomeIntent::switchActiveMenu(bool direction)
-{
-	uint16_t menuSize = menu->size();
-
-	// Menu has at least one item
-	if (menuSize == 0) {
-		return;
-	}
-	
-	MenuItem* currentActiveItem = nullptr;
-	uint16_t activeItemIndex = 0;
-
-	for (uint16_t i = 0; i < menuSize; i++)
-	{
-		MenuItem* item = menu->getItem(i);
-		if (item->getIsActive()) {
-			currentActiveItem = item;
-			activeItemIndex = i;
-			break;
-		}
-	}
-
-	// Remove active flag from the current item
-	if (currentActiveItem != nullptr) {
-		currentActiveItem->setIsActive(false);
-	}
-
-	// No active items at all, or forward direction and currenyly active item islast
-	if (currentActiveItem == nullptr || (direction && activeItemIndex == menuSize - 1)) {
-		menu->getItem(0)->setIsActive(true);
-		return;
-	}
-
-	// backward direction and currentkly active item is first
-	if (!direction && activeItemIndex == 0) {
-		menu->getItem(menuSize - 1)->setIsActive(true);
-		return;
-	}
-
-	uint16_t newActiveIndex = direction ? activeItemIndex + 1 : activeItemIndex - 1;
-
-	menu->getItem(newActiveIndex)->setIsActive(true);
 }

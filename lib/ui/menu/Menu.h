@@ -9,16 +9,26 @@ struct Menu
 {
     private:
         const uint16_t CAPACITY = 2048;
-        const Box box;
-        const bool fullWindow;
 
         uint16_t index;
         MenuItem** menuItemsArray;
         
     public:
-        Menu(const Box mBox, const bool mFullWindow);
+        Menu();
 
+        /**
+         * Add item to the menu
+         * 
+         * @param pointer to the new MenuItem
+         * @return true if added, false if menu at full capacity
+         */
         bool addItem(MenuItem* menuItem);
+
+        /**
+         * Removes last elemnt from the menu
+         * 
+         * @returns true of remeoved, false if menu is empty
+         */
         bool removeLastItem();
 
         /**
@@ -28,10 +38,26 @@ struct Menu
          * @returns MenuItem pointer 
          */
         MenuItem* getItem(uint16_t idx);
-        uint16_t size();
 
-        Box getBox();
-        bool getFullWindow();
+        /**
+         * @returns index of curerntly active item or -1 if no active items in the menu
+         */
+        int16_t getActiveItemIdx();
+
+        /** 
+         * Marks either next or previous menu item as active depending on a direction
+         * removes active mark from previously acttive one
+         * 
+         * @param direction active item will be moved to the bottom if direction 
+         */
+        void moveActiveItem(uint8_t direction);
+
+        /**
+         * Size of menu
+         * 
+         * @returns number of elements in mens
+         */
+        uint16_t size();
 
         ~Menu()
         {

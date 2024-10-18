@@ -1,6 +1,6 @@
 #include "Menu.h"
 
-Menu::Menu(const Box mBox, const bool mFullWindow): box(mBox), fullWindow(mFullWindow)
+Menu::Menu()
 {
     // Init array and allocate memory
     menuItemsArray = new MenuItem*[CAPACITY];
@@ -32,6 +32,53 @@ MenuItem* Menu::getItem(uint16_t idx)
     return menuItemsArray[idx];
 }
 
+int16_t Menu::getActiveItemIdx()
+{
+    for (uint16_t i = 0; i < index; i++)
+	{
+		MenuItem* item = getItem(i);
+		if (item->getIsActive()) {
+			return i;
+		}
+	}
+
+    return -1;
+}
+
+void Menu::moveActiveItem(uint8_t direction)
+{
+    // Menu has at least one element
+    if (size() == 0) {
+		return;
+	}
+
+    int16_t activeItemIdx = getActiveItemIdx();
+    // If no active item activate the existing one
+    if (activeItemIdx == -1) {
+        getItem(0)->setIsActive(true);
+        return;
+    }
+
+    // Active item non-null
+    // Deactivate current item
+    getItem(activeItemIdx)->setIsActive(false);
+
+    // forward direction and currenyly active item is last
+	if (direction && activeItemIdx == size() - 1) {
+		getItem(0)->setIsActive(true);
+		return;
+	}
+
+	// backward direction and currentkly active item is first
+	if (!direction && activeItemIdx == 0) {
+		getItem(size() - 1)->setIsActive(true);
+		return;
+	}
+
+	uint16_t newActiveIndex = direction ? activeItemIdx + 1 : activeItemIdx - 1;
+	getItem(newActiveIndex)->setIsActive(true);
+}
+
 bool Menu::removeLastItem()
 {
     delete menuItemsArray[index];
@@ -47,14 +94,4 @@ bool Menu::removeLastItem()
 uint16_t Menu::size()
 {
     return index;
-}
-
-Box Menu::getBox()
-{
-    return box;
-}
-
-bool Menu::getFullWindow()
-{
-    return fullWindow;
 }

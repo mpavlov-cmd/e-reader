@@ -4,7 +4,7 @@ MenuDrawer::MenuDrawer(GxEPD2_GFX &mDisplay) : display(mDisplay)
 {
 }
 
-void MenuDrawer::drawMenu(Menu &menu)
+void MenuDrawer::drawMenu(Menu& menu, Box& box, bool fullWindow)
 {
     if (menu.size() == 0)
     {
@@ -14,8 +14,8 @@ void MenuDrawer::drawMenu(Menu &menu)
     // Init Text bounds
     display.getTextBounds(menu.getItem(0)->getName(), 0, 0, &x, &y, &width, &height);
 
-    Box mB = menu.getBox();
-    Box* activeBox = new Box(0, 0, height - 2, height - 2, 0, 0);
+    Box mB = box;
+    Box activeBox(0, 0, height - 2, height - 2, 0, 0);
 
     uint8_t linePadding = 3;
     uint16_t lineStartX = mB.getX() + 2;
@@ -24,7 +24,7 @@ void MenuDrawer::drawMenu(Menu &menu)
     MenuItem mi;
 
     // Set either full or small window
-    if (menu.getFullWindow())
+    if (fullWindow)
     {
         display.setFullWindow();
     }
@@ -49,16 +49,13 @@ void MenuDrawer::drawMenu(Menu &menu)
 
             display.fillRect(
                 lineStartX,
-                textLineStartY - activeBox->getHeight(),
-                activeBox->getWidth(),
-                activeBox->getHeight(),
+                textLineStartY - activeBox.getHeight(),
+                activeBox.getWidth(),
+                activeBox.getHeight(),
                 boxColor
             );
-            display.setCursor(lineStartX + activeBox->getWidth() + 1, textLineStartY);
+            display.setCursor(lineStartX + activeBox.getWidth() + 1, textLineStartY);
             display.print(mi.getName());
         }
     } while (display.nextPage());
-
-    // Cleanup memory, do not need
-    delete activeBox;
 }

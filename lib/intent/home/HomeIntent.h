@@ -20,7 +20,8 @@ struct HomeIntent : public AbstractDisplayIntent
         MenuDrawer& menuDrawer;
 
         // Main menu
-        Menu* menu;
+        Menu* menu = new Menu();
+        Box* menuBox = new Box(48, 512, 384, 256, 0, 0);
 
         // Constant declaration
         const String NAME = "Home Intent";
@@ -34,9 +35,7 @@ struct HomeIntent : public AbstractDisplayIntent
         int16_t tbx, tby;
         uint16_t tbw, tbh, framew, frameh, startX, startY, totalW, totalH;
         
-
         void initClockCoordinates();
-        void switchActiveMenu(bool direction);
 
     public:
         HomeIntent(GxEPD2_GFX& display, ESP32Time& espTime,
@@ -47,6 +46,11 @@ struct HomeIntent : public AbstractDisplayIntent
         void onFrequncy() override;
         void onAction(uint16_t actionId) override;
         void onExit() override;
+
+        ~HomeIntent() {
+            delete menu;
+            delete menuBox;
+        };
 };
 
 
