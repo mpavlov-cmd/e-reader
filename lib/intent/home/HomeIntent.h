@@ -21,7 +21,7 @@ struct HomeIntent : public AbstractDisplayIntent
 
         // Main menu
         Menu* menu = new Menu();
-        Box* menuBox = new Box(48, 512, 384, 256, 0, 0);
+        Box* menuBox = new Box(48, 584, 384, 160, 0, 0);
 
         // Constant declaration
         const String NAME = "Home Intent";

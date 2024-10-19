@@ -9,7 +9,7 @@ PowerIndicator::PowerIndicator(
 {
 }
 
-void PowerIndicator::init() {
+void PowerIndicator::begin() {
 
     int16_t x, y;
     uint16_t width, height, batteryStart;
@@ -31,7 +31,6 @@ void PowerIndicator::init() {
 
 void PowerIndicator::refresh()
 {
-    
     // display.setPartialWindow(widgetStartX, 0, widgetTotalWidth, batteryBox->hght());
     display.setPartialWindow(0, 0, display.width(), batteryBox->getHeight());
     display.firstPage();
@@ -45,7 +44,7 @@ void PowerIndicator::refresh()
             
             // Only show charging when connected, chargeAllowed and charging
             const unsigned char* icon = gImage_plug;
-            if (powerStatus.getChageEnabled() && powerStatus.getChargingStatus() == CHARGING) {
+            if (powerStatus.getChargingStatus() == CHARGING) {
                 icon = gImage_bolt;
             }
 
@@ -69,8 +68,8 @@ void PowerIndicator::refresh()
         display.setCursor(0, 0 + batteryBox->getHeight() - 1);
         display.print(powerStatus.getBatteryVoltage());
 
-        display.setCursor(50, 0 + batteryBox->getHeight() - 1);
-        display.print(powerStatus.getVoltageDuringMeasuring());
+       // display.setCursor(50, 0 + batteryBox->getHeight() - 1);
+       // display.print(powerStatus.getVoltageDuringMeasuring());
 
     } while (display.nextPage());
 }

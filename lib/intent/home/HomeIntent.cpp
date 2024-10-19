@@ -37,37 +37,37 @@ void HomeIntent::onStartUp()
 
 void HomeIntent::onFrequncy()
 {
-//     display.setPartialWindow(startX, startY, totalW, totalH);
+    display.setPartialWindow(startX, startY, totalW, totalH);
 
-// 	dt.setValue(espTime.getHour(), IDX_HOUR);
-// 	dt.setValue(espTime.getMinute(), IDX_MIN);
-// 	dt.setValue(espTime.getSecond(), IDX_SEC);
-// 	dt.setValue(espTime.getDay(), IDX_DAY);
-// 	dt.setValue(espTime.getMonth(), IDX_MON);
-// 	dt.setValue(espTime.getYear()%100, IDX_YEAR);
+	dt.setValue(espTime.getHour(), IDX_HOUR);
+	dt.setValue(espTime.getMinute(), IDX_MIN);
+	dt.setValue(espTime.getSecond(), IDX_SEC);
+	dt.setValue(espTime.getDay(), IDX_DAY);
+	dt.setValue(espTime.getMonth(), IDX_MON);
+	dt.setValue(espTime.getYear()%100, IDX_YEAR);
 
-// 	uint8_t mask = dt.getMask();
+	uint8_t mask = dt.getMask();
 
-// 	display.firstPage();
-// 	do
-// 	{
-// 		for (uint8_t i = 0; i < 6; i++)
-// 		{
-// 			uint8_t changed = bitRead(mask, i);
-// 			if (changed == 0)
-// 			{
-// 				// continue;
-// 			}
+	display.firstPage();
+	do
+	{
+		for (uint8_t i = 0; i < 6; i++)
+		{
+			uint8_t changed = bitRead(mask, i);
+			if (changed == 0)
+			{
+				// continue;
+			}
 
-// 			char printVal[3];
-// 			sprintf(printVal, "%02d", dt.byIndex(i));
+			char printVal[3];
+			sprintf(printVal, "%02d", dt.byIndex(i));
 
-// 			display.fillRect(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
-// 			display.setCursor(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + tbh + 1);
-// 			display.print(printVal);
-// 		}
-// 	} while (display.nextPage());
-// 	dt.flushMask();	
+			display.fillRect(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + 1, framew - 2, frameh - 2, GxEPD_WHITE);
+			display.setCursor(clockBoxXY[i][0] + 1, clockBoxXY[i][1] + tbh + 1);
+			display.print(printVal);
+		}
+	} while (display.nextPage());
+	dt.flushMask();	
 }
 
 void HomeIntent::onAction(uint16_t actionId)

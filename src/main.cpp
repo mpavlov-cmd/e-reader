@@ -1,6 +1,5 @@
 // Pass display as parameter
 #define ENABLE_GxEPD2_GFX 1
-#define CONFIG_FREERTOS_USE_TRACE_FACILITY 1
 
 #include <Arduino.h>
 
@@ -40,8 +39,8 @@
 #define BT_INPUT_1 GPIO_NUM_39 // SENSOR_VN PIN 5
 #define BT_INPUT_2 GPIO_NUM_34 // PIN 6 INPUT ONLY
 
-const uint16_t BAT_V_MIN_MILLIVOLTS = 3000;
-const uint16_t BAT_V_MAX_MILLIVOLTS = 4200;
+// Semaphore to assure scheduled ta
+SemaphoreHandle_t semaphoreHandle;
 
 volatile bool isrPending = false; 
 volatile unsigned long isrStartedAt = 0;
@@ -50,9 +49,11 @@ volatile unsigned long isrStartedAt = 0;
 void IRAM_ATTR isr();
 void initDisplay();
 void blink(void* pvParameters);
-void taskWrapper(void* pvParameters);
 
-// service instantiation 
+void taskIntentFreq(void* pvParameters);
+void taskStatusDspl(void* pvParameters);
+
+// Service instantiation 
 ESP32Time rtc(0);
 FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
@@ -60,11 +61,12 @@ SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
 MenuDrawer menuDrawer(display);
 HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuDrawer);
-// PowerStatus powerStatus(rtc, PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT, PIN_CHG_ON);
+PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
+PowerIndicator powerIndicator(display, powerStatus);
 
 // Task handle for intent refresh
-TaskHandle_t taskHandle;
-TaskStatus_t xTaskDetails;
+TaskHandle_t intentFreqHandle = NULL;
+TaskHandle_t statusDsplHandle = NULL;
 
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
@@ -76,6 +78,10 @@ void setup()
 	// Indicate that I'm alive
 	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
 
+	// Semaphore instancese to assure 2 tasks do not update display
+	semaphoreHandle = xSemaphoreCreateBinary();
+	xSemaphoreGive(semaphoreHandle);
+
 	// Init Inputs and 
 	inputHandler.configure(isr, 100, 2500);
 	rtc.setTime(0, 0, 0, 15, 9, 2024);
@@ -83,25 +89,22 @@ void setup()
 	fileManager.begin();
 	initDisplay();
 
+	powerIndicator.begin();
+	powerIndicator.refresh();
+
 	homeIntent.onStartUp();
-	xTaskCreatePinnedToCore(taskWrapper, "clock", 2048, NULL, 1, &taskHandle, 0);
+	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 2048, NULL, 1, &intentFreqHandle, 0);
+	xTaskCreatePinnedToCore(taskStatusDspl, "statusDspl", 2048, NULL, 1, &statusDsplHandle, 0);
 }
 
 void loop()
 {
 	uint8_t switchInput = inputHandler.handleInput(isrPending, isrStartedAt);
 	if (switchInput) {
-
+		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
 		Serial.println(switchInput, BIN);
 		homeIntent.onAction(switchInput);
-		// eTaskState state = eTaskGetState(taskHandle);
-		// Serial.println(state);
-
-		// if (state != eSuspended) {
-		// 	vTaskSuspend(taskHandle);
-		// } else {
-		// 	vTaskResume(taskHandle);
-		// }
+		xSemaphoreGive(semaphoreHandle);
 	}
 }
 
@@ -146,11 +149,23 @@ void blink(void *pvParameters) {
 	}
 }
 
-void taskWrapper(void *pvParameters)
+void taskIntentFreq(void *pvParameters)
 {
 	for(;;) {
 		// Serial.println("Clock Task");
+		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
 		homeIntent.onFrequncy();
-		vTaskDelay(500 / portTICK_RATE_MS);
+		xSemaphoreGive(semaphoreHandle);
+		vTaskDelay(10000 / portTICK_RATE_MS);
+	}
+}
+
+void taskStatusDspl(void *pvParameters)
+{
+	for (;;) {
+		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
+		powerIndicator.refresh();
+		xSemaphoreGive(semaphoreHandle);
+		vTaskDelay(5000 / portTICK_RATE_MS);
 	}
 }

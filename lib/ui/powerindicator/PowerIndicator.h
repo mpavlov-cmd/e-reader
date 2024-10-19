@@ -30,7 +30,7 @@ struct PowerIndicator
             PowerStatus& powerStatus
         );
 
-        void init();
+        void begin();
         void refresh();
 };
 
