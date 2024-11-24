@@ -39,7 +39,7 @@
 #define BT_INPUT_1 GPIO_NUM_39 // SENSOR_VN PIN 5
 #define BT_INPUT_2 GPIO_NUM_34 // PIN 6 INPUT ONLY
 
-// Semaphore to assure scheduled ta
+// Semaphore to assure scheduled task
 SemaphoreHandle_t semaphoreHandle;
 
 volatile bool isrPending = false; 
@@ -90,7 +90,6 @@ void setup()
 	initDisplay();
 
 	powerIndicator.begin();
-	powerIndicator.refresh();
 
 	homeIntent.onStartUp();
 	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 2048, NULL, 1, &intentFreqHandle, 0);
@@ -143,9 +142,9 @@ void blink(void *pvParameters) {
 	pinMode(PIN_LED, OUTPUT);
 	for (;;) {
 		digitalWrite(PIN_LED, HIGH);
-		vTaskDelay(250 / portTICK_RATE_MS);
+		vTaskDelay(500 / portTICK_RATE_MS);
 		digitalWrite(PIN_LED, LOW);
-		vTaskDelay(250 / portTICK_RATE_MS);
+		vTaskDelay(500 / portTICK_RATE_MS);
 	}
 }
 
