@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "driver/rtc_io.h"
 #include "SD.h"
 #include "FS.h"
 
@@ -34,16 +35,10 @@
 
 #define PIN_CHG_DET  GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
 
-// PIN Definitions for input
+// PIN definitions for input
 #define BT_INPUT_0 GPIO_NUM_36 // SENSOR_VP PIN 4
 #define BT_INPUT_1 GPIO_NUM_39 // SENSOR_VN PIN 5
 #define BT_INPUT_2 GPIO_NUM_34 // PIN 6 INPUT ONLY
-
-// Semaphore to assure scheduled task
-SemaphoreHandle_t semaphoreHandle;
-
-volatile bool isrPending = false; 
-volatile unsigned long isrStartedAt = 0;
 
 // put function declarations here
 void IRAM_ATTR isr();
@@ -52,6 +47,13 @@ void blink(void* pvParameters);
 
 void taskIntentFreq(void* pvParameters);
 void taskStatusDspl(void* pvParameters);
+
+volatile bool isrPending = false; 
+volatile unsigned long isrStartedAt = 0;
+
+// Sleep params
+unsigned long lastUserInteraction;
+RTC_DATA_ATTR unsigned int bootCount = 0;
 
 // Service instantiation 
 ESP32Time rtc(0);
@@ -64,6 +66,8 @@ HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuDrawer);
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 PowerIndicator powerIndicator(display, powerStatus);
 
+// Semaphore to assure scheduled task
+SemaphoreHandle_t semaphoreHandle;
 // Task handle for intent refresh
 TaskHandle_t intentFreqHandle = NULL;
 TaskHandle_t statusDsplHandle = NULL;
@@ -75,7 +79,16 @@ void setup()
 	Serial.begin(115200);
 	Serial.println("-------- BOOT SUCCESS --------");
 
+	Serial.printf("Boot count: %i\n", ++bootCount);
+
+	// Configure wake-up source:
+	esp_err_t sleepConf = esp_sleep_enable_ext1_wakeup(GPIO_SEL_34 | GPIO_SEL_36 | GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
+	if (sleepConf != ESP_OK) {
+		Serial.println("Unable to configure external wakeup");
+	}
+
 	// Indicate that I'm alive
+	lastUserInteraction = millis();
 	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
 
 	// Semaphore instancese to assure 2 tasks do not update display
@@ -100,6 +113,11 @@ void loop()
 {
 	uint8_t switchInput = inputHandler.handleInput(isrPending, isrStartedAt);
 	if (switchInput) {
+		
+		// Capture lest interaction 
+		lastUserInteraction = millis();
+		
+		// Run action
 		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
 		Serial.println(switchInput, BIN);
 		homeIntent.onAction(switchInput);
@@ -145,7 +163,18 @@ void blink(void *pvParameters) {
 		vTaskDelay(500 / portTICK_RATE_MS);
 		digitalWrite(PIN_LED, LOW);
 		vTaskDelay(500 / portTICK_RATE_MS);
+
+		unsigned long lastInputTime = millis() - lastUserInteraction;
+		// Serial.printf("Last Input time %i\n", lastInputTime);
+		if (lastInputTime >= 30000) {
+			Serial.println("Idle timeout reached. Ready to sleep!");
+			break;
+		}
 	}
+
+	digitalWrite(PIN_LED, LOW);
+	display.hibernate();
+	esp_deep_sleep_start();
 }
 
 void taskIntentFreq(void *pvParameters)

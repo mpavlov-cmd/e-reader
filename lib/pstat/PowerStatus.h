@@ -12,7 +12,7 @@ enum ChargeingStatus { NC, CHARGING, FULL };
 struct PowerStatus
 {
     private:
-        const float VOLTAGE_DIVIDER_RAITO     = 2.1;
+        const float VOLTAGE_DIVIDER_RAITO     = 2.0;
         const uint16_t VOLTAGE_REF_MILLIVOLTS = 3300;
         const uint16_t VOLTAGE_MIN_MILLIVOLTS = 3000;
         const uint16_t VOLTAGE_MAX_MILLIVOLTS = 4200;

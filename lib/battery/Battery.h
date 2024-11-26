@@ -76,7 +76,7 @@ class Battery {
 
 	private:
 		// Adjust for ultimate accuracy when input is measured using an accurate DVM, if reading too high then use e.g. 0.99, too low use 1.01
-		const float ESP_CALIBRATION = 1.1500;
+		const float ESP_CALIBRATION = 1.01;
 
 		uint16_t refVoltage;
 		uint16_t minVoltage;
