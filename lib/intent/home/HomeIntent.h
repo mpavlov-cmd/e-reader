@@ -8,7 +8,7 @@
 #include <ESP32Time.h>
 #include <FileManager.h>
 #include <ImageDrawer.h>
-#include <menu/MenuDrawer.h>
+#include <widget/MenuWidget.h>
 #include <menu/Menu.h>
 
 struct HomeIntent : public AbstractDisplayIntent
@@ -17,11 +17,10 @@ struct HomeIntent : public AbstractDisplayIntent
         ESP32Time& espTime;
         FileManager& fileManager;
         ImageDrawer& imageDrawer;
-        MenuDrawer& menuDrawer;
+        MenuWidget& menuWidget;
 
         // Main menu
         Menu* menu = nullptr;
-        Box* menuBox = new Box(48, 584, 384, 160, 0, 0);
 
         // Constant declaration
         const String NAME = "Home Intent";
@@ -39,7 +38,7 @@ struct HomeIntent : public AbstractDisplayIntent
 
     public:
         HomeIntent(GxEPD2_GFX& display, ESP32Time& espTime,
-            FileManager& fm, ImageDrawer& idrawer, MenuDrawer& menuDrawer);
+            FileManager& fm, ImageDrawer& idrawer, MenuWidget& menuWidget);
 
         String getName() override;
         void onStartUp() override;
@@ -49,7 +48,6 @@ struct HomeIntent : public AbstractDisplayIntent
 
         ~HomeIntent() {
             delete menu;
-            delete menuBox;
         };
 };
 

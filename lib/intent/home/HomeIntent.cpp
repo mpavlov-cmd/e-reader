@@ -2,9 +2,12 @@
 #include <ButtonActions.h>
 
 HomeIntent::HomeIntent(
-    GxEPD2_GFX& display, ESP32Time &espTime, FileManager& fm, ImageDrawer& idrawer, MenuDrawer& menuDrawer
-) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm),
-	imageDrawer(idrawer), menuDrawer(menuDrawer)
+    GxEPD2_GFX& display,
+	ESP32Time &espTime,
+	FileManager& fm, 
+	ImageDrawer& idrawer, 
+	MenuWidget& menuWidget
+) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm), imageDrawer(idrawer), menuWidget(menuWidget)
 {
 }
 
@@ -35,7 +38,10 @@ void HomeIntent::onStartUp()
 	menuItems.addItem(new MenuItem(5, "Other"));
 
 	menu = new Menu(menuItems);
-	menuDrawer.drawMenu(*menu, *menuBox, false);
+	// menuDrawer.drawMenu(*menu, *menuBox, false);
+	
+	MenuWidget menuWidget(display);
+	menuWidget.upgrade(*menu);
 }
 
 void HomeIntent::onFrequncy()
@@ -85,7 +91,7 @@ void HomeIntent::onAction(uint16_t actionId)
 	if (action == BUTTON_ACTION_DOWN || action == BUTTON_ACTION_UP) {
 		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
 		menu->moveActiveItem(direction);
-		menuDrawer.drawMenu(*menu, *menuBox, false);
+		menuWidget.upgrade(*menu);
 		return;
 	}
 

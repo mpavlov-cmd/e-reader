@@ -5,7 +5,6 @@
 
 struct Box
 {
-    private:
         const int16_t x;
         const int16_t y;
         const uint16_t width;
@@ -14,6 +13,7 @@ struct Box
         const uint8_t border;
 
     public:
+        // Default 
         Box(
             const int16_t cX,
             const int16_t cY,

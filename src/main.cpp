@@ -1,5 +1,5 @@
 #define ENABLE_GxEPD2_GFX 1
-// #define SERIAL_DEBUG_ENABLED 1
+#define SERIAL_DEBUG_ENABLED 1
 
 #include <Arduino.h>
 
@@ -61,8 +61,8 @@ FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
 SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
-MenuDrawer menuDrawer(display);
-HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuDrawer);
+MenuWidget menuWidget(display);
+HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuWidget);
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 PowerIndicator powerIndicator(display, powerStatus);
 
