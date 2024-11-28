@@ -1,5 +1,5 @@
-// Pass display as parameter
 #define ENABLE_GxEPD2_GFX 1
+// #define SERIAL_DEBUG_ENABLED 1
 
 #include <Arduino.h>
 
@@ -103,8 +103,8 @@ void setup()
 	initDisplay();
 
 	powerIndicator.begin();
-
 	homeIntent.onStartUp();
+
 	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 2048, NULL, 1, &intentFreqHandle, 0);
 	xTaskCreatePinnedToCore(taskStatusDspl, "statusDspl", 2048, NULL, 1, &statusDsplHandle, 0);
 }

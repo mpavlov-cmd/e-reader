@@ -22,16 +22,19 @@ void HomeIntent::onStartUp()
 	File file = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
 	imageDrawer.drawBitmapFromSD_Buffered(file, 0, 0, false, false);
 
+	// Define menu items
+	Set<MenuItem> menuItems(10);
+
 	// Fill menu
-	MenuItem* booksItem = new MenuItem(1, "Books");
-	booksItem->setIsActive(true);
+	MenuItem* booksItem = new MenuItem(1, "Books", true);
 
-	menu->addItem(booksItem);
-	menu->addItem(new MenuItem(2, "Settings"));
-	menu->addItem(new MenuItem(3, "Long item of the menu"));
-	menu->addItem(new MenuItem(4, "One more item for fun"));
-	menu->addItem(new MenuItem(5, "Other"));
+	menuItems.addItem(booksItem);
+	menuItems.addItem(new MenuItem(2, "Settings"));
+	menuItems.addItem(new MenuItem(3, "Sleep"));
+	menuItems.addItem(new MenuItem(4, "One more item for fun"));
+	menuItems.addItem(new MenuItem(5, "Other"));
 
+	menu = new Menu(menuItems);
 	menuDrawer.drawMenu(*menu, *menuBox, false);
 }
 

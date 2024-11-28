@@ -6,13 +6,15 @@ MenuDrawer::MenuDrawer(GxEPD2_GFX &mDisplay) : display(mDisplay)
 
 void MenuDrawer::drawMenu(Menu& menu, Box& box, bool fullWindow)
 {
-    if (menu.size() == 0)
+    // Get reference to items set stored in the menu
+    Set<MenuItem>& menuItems = menu.getItemsSet();
+    if (menuItems.size() == 0)
     {
         return;
     }
 
     // Init Text bounds
-    display.getTextBounds(menu.getItem(0)->getName(), 0, 0, &x, &y, &width, &height);
+    display.getTextBounds(menuItems.getItem(0)->getName(), 0, 0, &x, &y, &width, &height);
 
     Box mB = box;
     Box activeBox(0, 0, height - 2, height - 2, 0, 0);
@@ -21,7 +23,6 @@ void MenuDrawer::drawMenu(Menu& menu, Box& box, bool fullWindow)
     uint16_t lineStartX = mB.getX() + 2;
 
     uint16_t boxColor, textLineStartY;
-    MenuItem mi;
 
     // Set either full or small window
     if (fullWindow)
@@ -39,9 +40,9 @@ void MenuDrawer::drawMenu(Menu& menu, Box& box, bool fullWindow)
         // Clear menu page
         display.fillRect(mB.getX(), mB.getY(), mB.getWidth(), mB.getHeight(), GxEPD_WHITE);
         display.drawRect(mB.getX(), mB.getY(), mB.getWidth(), mB.getHeight(), GxEPD_BLACK);
-        for (uint16_t i = 0; i < menu.size(); i++)
+        for (uint16_t i = 0; i < menuItems.size(); i++)
         {
-            MenuItem mi = *menu.getItem(i);
+            MenuItem mi = *menuItems.getItem(i);
             boxColor = mi.getIsActive() ? GxEPD_BLACK : GxEPD_WHITE;
 
             // Text starts from bottom left corner of the cursor

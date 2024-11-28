@@ -1,12 +1,9 @@
 #include "MenuItem.h"
 
-MenuItem::MenuItem(const uint16_t mId, const char *mName): id(mId), name(mName)
+MenuItem::MenuItem(const uint16_t mId, const char *mName, bool mIsActive = false): id(mId), name(mName), isActive(mIsActive)
 {
 }
 
-MenuItem::MenuItem(): id(0), name(nullptr)
-{
-}
 
 uint16_t MenuItem::getId()
 {

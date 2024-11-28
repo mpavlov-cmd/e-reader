@@ -20,7 +20,7 @@ struct HomeIntent : public AbstractDisplayIntent
         MenuDrawer& menuDrawer;
 
         // Main menu
-        Menu* menu = new Menu();
+        Menu* menu = nullptr;
         Box* menuBox = new Box(48, 584, 384, 160, 0, 0);
 
         // Constant declaration

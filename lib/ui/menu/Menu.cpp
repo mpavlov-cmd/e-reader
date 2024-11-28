@@ -1,97 +1,69 @@
 #include "Menu.h"
 
-Menu::Menu()
+int16_t Menu::getActiveItemIdx()
 {
-    // Init array and allocate memory
-    menuItemsArray = new MenuItem*[CAPACITY];
-    index = 0;
-    for (int i = 0; i < CAPACITY; ++i) {
-        menuItemsArray[i] = nullptr;
-    }
-}
-
-bool Menu::addItem(MenuItem *menuItem)
-{
-    if (index >= CAPACITY)
+    for (uint16_t i = 0; i < menuItems.size(); i++)
     {
-        return false;
+        MenuItem *item = menuItems.getItem(i);
+        if (item->getIsActive())
+        {
+            return i;
+        }
     }
 
-    menuItemsArray[index++] = menuItem;
-
-    return true;
+    return -1;
 }
 
-MenuItem* Menu::getItem(uint16_t idx)
+Menu::Menu(Set<MenuItem>& itemsSet) : menuItems(itemsSet)
 {
-    if (idx >= CAPACITY) {
-        Serial.println("Error, index out of capacity");
+}
+
+Set<MenuItem>& Menu::getItemsSet()
+{
+    return menuItems;
+}
+
+MenuItem* Menu::getActiveItem()
+{
+    uint16_t idx = getActiveItemIdx();
+    if (idx == -1) {
         return nullptr;
     }
 
-    return menuItemsArray[idx];
-}
-
-int16_t Menu::getActiveItemIdx()
-{
-    for (uint16_t i = 0; i < index; i++)
-	{
-		MenuItem* item = getItem(i);
-		if (item->getIsActive()) {
-			return i;
-		}
-	}
-
-    return -1;
+    return menuItems.getItem(idx);
 }
 
 void Menu::moveActiveItem(uint8_t direction)
 {
     // Menu has at least one element
-    if (size() == 0) {
+    uint16_t size = menuItems.size();
+    if (size == 0) {
 		return;
 	}
 
     int16_t activeItemIdx = getActiveItemIdx();
     // If no active item activate the existing one
     if (activeItemIdx == -1) {
-        getItem(0)->setIsActive(true);
+        menuItems.getItem(0)->setIsActive(true);
         return;
     }
 
     // Active item non-null
     // Deactivate current item
-    getItem(activeItemIdx)->setIsActive(false);
+    menuItems.getItem(activeItemIdx)->setIsActive(false);
 
     // forward direction and currenyly active item is last
-	if (direction && activeItemIdx == size() - 1) {
-		getItem(0)->setIsActive(true);
+	if (direction && activeItemIdx == size - 1) {
+		menuItems.getItem(0)->setIsActive(true);
 		return;
 	}
 
 	// backward direction and currentkly active item is first
 	if (!direction && activeItemIdx == 0) {
-		getItem(size() - 1)->setIsActive(true);
+	    menuItems.getItem(size - 1)->setIsActive(true);
 		return;
 	}
 
 	uint16_t newActiveIndex = direction ? activeItemIdx + 1 : activeItemIdx - 1;
-	getItem(newActiveIndex)->setIsActive(true);
-}
-
-bool Menu::removeLastItem()
-{
-    delete menuItemsArray[index];
-    if (index == 0)
-    {
-        return false;
-    }
-
-    index--;
-    return true;
-}
-
-uint16_t Menu::size()
-{
-    return index;
+	menuItems.getItem(newActiveIndex)->setIsActive(true);
 }
