@@ -62,7 +62,8 @@ TextIndex textIndex(display, fileManager);
 SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
 MenuWidget menuWidget(display);
-HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuWidget);
+ClockWidget clockWidget(display);
+HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuWidget, clockWidget);
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 PowerIndicator powerIndicator(display, powerStatus);
 

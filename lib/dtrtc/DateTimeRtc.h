@@ -5,7 +5,7 @@
 
 const uint8_t ZERO_MASK = 0b000000;
 const uint8_t FULL_MASK = 0b111111;
-const uint8_t VALUE_LIMIT[] = {23, 59, 59, 0, 12, 99};
+const uint8_t VALUE_LIMIT[]   = {23, 59, 59, 0, 12, 99};
 const uint8_t DAYS_IN_MONTH[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 const uint8_t IDX_HOUR = 0;

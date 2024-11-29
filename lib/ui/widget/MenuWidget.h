@@ -6,6 +6,7 @@
 
 class MenuWidget : public AbstractWidget<Menu>
 {
+
 public:
     MenuWidget(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
 
@@ -15,7 +16,7 @@ private:
     uint8_t linePadding = 3;
     DBox activeBox;
 
-    DBox createBox() override
+    DBox createBox(Menu& widgetData) override
     {
         return {48, 584, 384, 160, 0, 0};
     }
@@ -30,8 +31,6 @@ private:
 
         // Init Text bounds
         display.getTextBounds(menuItems.getItem(0)->getName(), 0, 0, &x, &y, &width, &height);
-
-        // Do not do any calculations if menu items are empty
         lineStartX = box.x + 2;
 
         uint16_t activeBoxSide = height - 2;
@@ -66,6 +65,10 @@ private:
             display.setCursor(lineStartX + activeBox.width + 1, textLineStartY);
             display.print(mi.getName());
         }
+    }
+
+    void afterPrint(Menu& widgetData) override {
+       
     }
 };
 

@@ -16,10 +16,11 @@ class AbstractWidget
     private:
         bool initialized = false; 
 
+        virtual DBox createBox(T& widgetData) = 0;
         virtual void initialize(T& widgetData) = 0;
         virtual void beforePrint(T& widgetData) = 0;
         virtual void print(T& widgetData) = 0;
-        virtual DBox createBox() = 0;
+        virtual void afterPrint(T& widgetData) = 0;
 
     public:
         AbstractWidget(GxEPD2_GFX& mDisplay) : display(mDisplay), box(DBox()) {};
@@ -36,7 +37,7 @@ class AbstractWidget
                 #endif
                 
                 // Create box
-                box = createBox();
+                box = createBox(widgetData);
 
                 initialize(widgetData);
                 initialized = true;
@@ -55,6 +56,8 @@ class AbstractWidget
                 print(widgetData);
             }
             while (display.nextPage());
+
+            afterPrint(widgetData);
         }
 };
 
