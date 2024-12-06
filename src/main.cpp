@@ -18,14 +18,15 @@
 #include <Fonts/FreeSans9pt7b.h>
 
 #include <DateTimeRtc.h>
+#include <FileManager.h>
+#include <Battery.h>
+
 #include <home/HomeIntent.h>
 #include <PowerStatus.h>
-#include <powerindicator/PowerIndicator.h>
-#include <Battery.h>
-#include <FileManager.h>
 #include <ImageDrawer.h>
 #include <text/TextIndex.h>
 #include <SwithInputHandler.h>
+#include <widget/PowerWidget.h>
 
 #define PIN_LED      GPIO_NUM_2  // LED and BOOT MODE
 
@@ -64,8 +65,9 @@ ImageDrawer imageDrawer(display);
 MenuWidget menuWidget(display);
 ClockWidget clockWidget(display);
 HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuWidget, clockWidget);
+
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
-PowerIndicator powerIndicator(display, powerStatus);
+PowerWidget powerWidget(display);
 
 // Semaphore to assure scheduled task
 SemaphoreHandle_t semaphoreHandle;
@@ -103,7 +105,6 @@ void setup()
 	fileManager.begin();
 	initDisplay();
 
-	powerIndicator.begin();
 	homeIntent.onStartUp();
 
 	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 2048, NULL, 1, &intentFreqHandle, 0);
@@ -193,7 +194,11 @@ void taskStatusDspl(void *pvParameters)
 {
 	for (;;) {
 		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
-		powerIndicator.refresh();
+		
+		// Measure and print power metrics
+		PowerMetrics powerMetrics = powerStatus.measure();
+		powerWidget.upgrade(powerMetrics);
+
 		xSemaphoreGive(semaphoreHandle);
 		vTaskDelay(5000 / portTICK_RATE_MS);
 	}

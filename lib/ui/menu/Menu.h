@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <menu/MenuItem.h>
 #include <set/Set.h>
-#include <box/Box.h>
 
 struct Menu
 {

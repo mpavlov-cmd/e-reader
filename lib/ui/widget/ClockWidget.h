@@ -44,13 +44,11 @@ private:
         addTillEight(totalW);
         addTillEight(totalH);
 
-        return {startX, startY, totalW, totalH, 0, 0};
+        return {startX, startY, (uint16_t) totalW, (uint16_t) totalH, 0, 0};
     }
 
     void initialize(DateTimeRtc& widgetData) override {
 
-        // Serial.println();
-        
         uint16_t cursor = box.x;
         for (uint8_t i = 0; i < NUM_BOXES; i++)
         {

@@ -9,6 +9,15 @@
 
 enum ChargeingStatus { NC, CHARGING, FULL };
 
+struct PowerMetrics
+{
+    ChargeingStatus chargingStatus;
+    bool isConnected;
+    uint8_t battLevelPercent;
+    uint16_t battVoltageMillivolts;
+};
+
+
 struct PowerStatus
 {
     private:
@@ -16,8 +25,7 @@ struct PowerStatus
         const uint16_t VOLTAGE_REF_MILLIVOLTS = 3300;
         const uint16_t VOLTAGE_MIN_MILLIVOLTS = 3000;
         const uint16_t VOLTAGE_MAX_MILLIVOLTS = 4200;
-
-        const uint8_t ADC_RESOLUTION = 12;
+        const uint8_t ADC_RESOLUTION          = 12;
 
         Battery battery;
         
@@ -32,6 +40,11 @@ struct PowerStatus
         boolean firstRun = true;
         boolean measureingDuringCharge = false;
 
+        boolean getConnected();
+        uint8_t getBatteryLevelPercent();
+        ChargeingStatus getChargingStatus();
+        uint16_t getBatteryVoltage();
+
     public:
         PowerStatus(
             uint8_t powerSensePin,
@@ -39,13 +52,7 @@ struct PowerStatus
             uint8_t batterySensePin
         );
 
-        boolean getConnected();
-        uint8_t getBatteryLevelPercent();
-        ChargeingStatus getChargingStatus();
-
-        // TEMP
-        uint16_t getBatteryVoltage();
-
+        PowerMetrics measure();
 };
  
 

@@ -50,3 +50,14 @@ ChargeingStatus PowerStatus::getChargingStatus()
 {
     return digitalRead(chargeStatusPin) == LOW ? CHARGING : FULL;
 }
+
+
+PowerMetrics PowerStatus::measure()
+{
+    ChargeingStatus chargeingStatus = getChargingStatus();
+    bool isConnected = getConnected();
+    uint8_t battLevelPercent = getBatteryLevelPercent();
+    uint16_t voltage = getBatteryVoltage();
+
+    return {chargeingStatus, isConnected, battLevelPercent, voltage};
+}
