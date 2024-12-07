@@ -1,6 +1,5 @@
 #include "PowerStatus.h"
 
-
 PowerStatus::PowerStatus(
     uint8_t powerSensePin,
     uint8_t chargeStatusPin,

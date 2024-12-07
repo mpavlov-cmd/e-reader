@@ -31,9 +31,9 @@ void HomeIntent::onStartUp()
 
 	menuItems.addItem(booksItem);
 	menuItems.addItem(new MenuItem(2, "Settings"));
-	menuItems.addItem(new MenuItem(3, "Sleep"));
+	menuItems.addItem(new MenuItem(3, "Other"));
 	menuItems.addItem(new MenuItem(4, "One more item for fun"));
-	menuItems.addItem(new MenuItem(5, "Other"));
+	menuItems.addItem(new MenuItem(5, "Sleep"));
 
 	menu = new Menu(menuItems);
 	
@@ -58,7 +58,7 @@ void HomeIntent::onAction(uint16_t actionId)
 	Serial.printf("Inside of action: %i\n", actionId);
 
 	// Extract hold bit for easy use
-	bool held = false;
+	bool held      = false;
 	uint8_t action = controlDirection(actionId, held);
 
 	// Up or nown

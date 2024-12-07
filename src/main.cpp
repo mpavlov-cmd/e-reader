@@ -20,6 +20,7 @@
 #include <DateTimeRtc.h>
 #include <FileManager.h>
 #include <Battery.h>
+#include <SleepControl.h>
 
 #include <home/HomeIntent.h>
 #include <PowerStatus.h>
@@ -56,7 +57,10 @@ volatile unsigned long isrStartedAt = 0;
 unsigned long lastUserInteraction;
 RTC_DATA_ATTR unsigned int bootCount = 0;
 
-// Service instantiation 
+// Service instantiation
+SleepControlConf conf = {GPIO_SEL_34 | GPIO_SEL_36 | GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW};
+SleepControl sleepControl(conf);
+
 ESP32Time rtc(0);
 FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
@@ -84,11 +88,8 @@ void setup()
 
 	Serial.printf("Boot count: %i\n", ++bootCount);
 
-	// Configure wake-up source:
-	esp_err_t sleepConf = esp_sleep_enable_ext1_wakeup(GPIO_SEL_34 | GPIO_SEL_36 | GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
-	if (sleepConf != ESP_OK) {
-		Serial.println("Unable to configure external wakeup");
-	}
+	// Configure wake-up source
+	sleepControl.configureExt1WakeUp();
 
 	// Indicate that I'm alive
 	lastUserInteraction = millis();
@@ -176,7 +177,7 @@ void blink(void *pvParameters) {
 
 	digitalWrite(PIN_LED, LOW);
 	display.hibernate();
-	esp_deep_sleep_start();
+	sleepControl.sleepNow();
 }
 
 void taskIntentFreq(void *pvParameters)

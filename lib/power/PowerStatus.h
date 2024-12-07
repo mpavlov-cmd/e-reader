@@ -28,17 +28,11 @@ struct PowerStatus
         const uint8_t ADC_RESOLUTION          = 12;
 
         Battery battery;
-        
         uint8_t powerSensePin;
         uint8_t chargeStatusPin;
 
         uint8_t batteryPercentLatch = 100;
-        unsigned long timeLatch = 0;
-        unsigned long timeLatchMeasureDelay = 0;
-
         boolean connectedLatch = false;
-        boolean firstRun = true;
-        boolean measureingDuringCharge = false;
 
         boolean getConnected();
         uint8_t getBatteryLevelPercent();
