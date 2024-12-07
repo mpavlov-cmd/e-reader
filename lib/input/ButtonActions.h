@@ -1,5 +1,5 @@
-#ifndef SWITCHINPUTHANDLER_H
-#define SWITCHINPUTHANDLER_H
+#ifndef BUTTONACTIONS_H
+#define BUTTONACTIONS_H
 
 #include <Arduino.h>
 

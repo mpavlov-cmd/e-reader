@@ -1,5 +1,5 @@
-#ifndef HOMEINTENT_H
-#define HOMEINTENT_H
+#ifndef INTENTHOME_H
+#define INTENTHOME_H
 
 #pragma once
 
@@ -11,15 +11,15 @@
 #include <widget/MenuWidget.h>
 #include <widget/ClockWidget.h>
 #include <menu/Menu.h>
+#include <ButtonActions.h>
 
-struct HomeIntent : public AbstractDisplayIntent
+struct IntentHome : public AbstractDisplayIntent
 {
     private:
         ESP32Time& espTime;
         FileManager& fileManager;
         ImageDrawer& imageDrawer;
 
-        // TODO: Intent can own widgets
         MenuWidget& menuWidget;
         ClockWidget& clockWidget;
 
@@ -27,20 +27,21 @@ struct HomeIntent : public AbstractDisplayIntent
         Menu* menu = nullptr;
         DateTimeRtc dt = DateTimeRtc();
 
-        // Constant declaration
-        const String NAME = "Home Intent";
-
     public:
-        HomeIntent(GxEPD2_GFX& display, ESP32Time& espTime,
+        // Constant declaration
+        static constexpr const uint8_t ID = 0;
+
+        IntentHome(GxEPD2_GFX& display, ESP32Time& espTime,
             FileManager& fm, ImageDrawer& idrawer, MenuWidget& menuWidget, ClockWidget& ClockWidget);
 
-        String getName() override;
         void onStartUp() override;
         void onFrequncy() override;
-        void onAction(uint16_t actionId) override;
         void onExit() override;
 
-        ~HomeIntent() {
+        ActionResult onAction(uint16_t actionId) override;
+        uint8_t getId() override;
+
+        ~IntentHome() {
             delete menu;
         };
 };

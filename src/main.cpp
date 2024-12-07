@@ -22,7 +22,9 @@
 #include <Battery.h>
 #include <SleepControl.h>
 
-#include <home/HomeIntent.h>
+#include <home/IntentHome.h>
+#include <sleep/IntentSleep.h>
+
 #include <PowerStatus.h>
 #include <ImageDrawer.h>
 #include <text/TextIndex.h>
@@ -68,7 +70,8 @@ SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
 MenuWidget menuWidget(display);
 ClockWidget clockWidget(display);
-HomeIntent homeIntent(display, rtc, fileManager, imageDrawer, menuWidget, clockWidget);
+IntentHome intentHome(display, rtc, fileManager, imageDrawer, menuWidget, clockWidget);
+IntentSleep intentSleep(display);
 
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 PowerWidget powerWidget(display);
@@ -79,13 +82,15 @@ SemaphoreHandle_t semaphoreHandle;
 TaskHandle_t intentFreqHandle = NULL;
 TaskHandle_t statusDsplHandle = NULL;
 
+// TODO: Define current in tent as nullptr, and pick saved state on wakeup
+AbstractIntent* intentCurrent = &intentHome;
+
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
 void setup()
 {
 	Serial.begin(115200);
 	Serial.println("-------- BOOT SUCCESS --------");
-
 	Serial.printf("Boot count: %i\n", ++bootCount);
 
 	// Configure wake-up source
@@ -106,7 +111,7 @@ void setup()
 	fileManager.begin();
 	initDisplay();
 
-	homeIntent.onStartUp();
+	intentCurrent->onStartUp();
 
 	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 2048, NULL, 1, &intentFreqHandle, 0);
 	xTaskCreatePinnedToCore(taskStatusDspl, "statusDspl", 2048, NULL, 1, &statusDsplHandle, 0);
@@ -122,8 +127,18 @@ void loop()
 		
 		// Run action
 		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
+		Serial.print("Action perfromed: ");
 		Serial.println(switchInput, BIN);
-		homeIntent.onAction(switchInput);
+
+		ActionResult result = intentCurrent->onAction(switchInput);
+		if (result.type == ActionRetultType::CHANGE_INTENT) {
+			// TODO: create mapping between intents and their ids
+			// Exit current intent and start next one
+			intentCurrent->onExit();
+			intentCurrent = &intentSleep;
+			intentCurrent->onStartUp();
+		}
+		
 		xSemaphoreGive(semaphoreHandle);
 	}
 }
@@ -185,7 +200,7 @@ void taskIntentFreq(void *pvParameters)
 	for(;;) {
 		// Serial.println("Clock Task");
 		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
-		homeIntent.onFrequncy();
+		intentCurrent->onFrequncy();
 		xSemaphoreGive(semaphoreHandle);
 		vTaskDelay(10000 / portTICK_RATE_MS);
 	}
