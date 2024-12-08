@@ -1,10 +1,10 @@
  ## TODO List
 
 ### Software
-- [ ] (Temp) Add sleep menu item in the menu. Sleep should be supported on timeout and on demand. Before sleep should pick ramdom image from SD card and print it.
-    - [ ] Add Sleep Intent, SleepIntent::onStartup() would put device into deep sleep
-    - [ ] Implement return type for OnAction to switch intenets in main
-    - [ ] Implement image widget
+- [x] (Temp) Add sleep menu item in the menu. Sleep should be supported on timeout and on demand. Before sleep should pick ramdom image from SD card and print it.
+    - [x] Add Sleep Intent, SleepIntent::onStartup() would put device into deep sleep
+    - [x] Implement return type for OnAction to switch intenets in main
+    - [x] Implement image widget
 - [ ] Imlement file manager UI which should work with DirIndex and would allow to select file
 - [ ] Implement Book Intent with an abilities to: Show current page, show naviagtion bar (book percent, line, total pages)
 - [ ] Implement the flow where the device will wake-up and check wakup reason, if it is timer, it should not refresh full display, instead it should update clock and battery charge (probably separaete intend) and go back to sleep. In case wakeup reason is ext1 (joystick) full wakup should happen.

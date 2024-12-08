@@ -31,6 +31,7 @@
 #include <text/TextIndex.h>
 #include <SwithInputHandler.h>
 #include <widget/WidgetPower.h>
+#include <widget/WidgetImage.h>
 
 #define PIN_LED      GPIO_NUM_2  // LED AND BOOT MODE
 
@@ -46,10 +47,12 @@
 #define BT_INPUT_2 GPIO_NUM_34 // PIN 6 INPUT ONLY
 
 #define INTENTS_MAX 256
+#define SLEEP_TIMEOUT_MILLS 60 * 1000
 
 // put function declarations here
 void IRAM_ATTR isr();
 void initDisplay();
+void clearDisplay();
 void blink(void* pvParameters);
 void initIntentsArray();
 
@@ -72,10 +75,13 @@ FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
 SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
+
 WidgetMenu widgetMenu(display);
 WidgetClock widgetClock(display);
+WidgetImage widgetImage(display, imageDrawer, fileManager);
+
 IntentHome intentHome(display, rtc, fileManager, imageDrawer, widgetMenu, widgetClock);
-IntentSleep intentSleep(display);
+IntentSleep intentSleep(display, sleepControl, widgetImage);
 
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 WidgetPower widgetPower(display);
@@ -107,7 +113,7 @@ void setup()
 
 	// Indicate that I'm alive
 	lastUserInteraction = millis();
-	xTaskCreate(blink, "blinky", 1000, NULL, 5, NULL);
+	xTaskCreate(blink, "blinky", 4096, NULL, 5, NULL);
 
 	// Semaphore instancese to assure 2 tasks do not update display
 	semaphoreHandle = xSemaphoreCreateBinary();
@@ -151,6 +157,7 @@ void loop()
 				Serial.printf("Change intent action fired with id: %i\n", result.id);
 				// Exit current intent and start next one
 				intentCurrent->onExit();
+				clearDisplay();
 				intentCurrent = intentsAll[result.id];
 				intentCurrent->onStartUp();
 			}			
@@ -182,6 +189,11 @@ void initDisplay()
 	display.setTextSize(1);
 	display.setTextColor(GxEPD_BLACK);
 
+	clearDisplay();
+}
+
+void clearDisplay()
+{
 	display.setFullWindow();
 	display.firstPage();
 	do
@@ -189,7 +201,6 @@ void initDisplay()
 		display.fillScreen(GxEPD_WHITE);
 	} while (display.nextPage());
 }
-
 
 void blink(void *pvParameters) {
 	pinMode(PIN_LED, OUTPUT);
@@ -202,15 +213,18 @@ void blink(void *pvParameters) {
 
 		// Validate last input and sleep
 		unsigned long lastInputTime = millis() - lastUserInteraction;
-		if (lastInputTime >= 30000) {
+		if (lastInputTime >= SLEEP_TIMEOUT_MILLS) {
 			Serial.println("Idle timeout reached. Ready to sleep!");
 			break;
 		}
 	}
 
+	// Will not give back semaphore, because deep sleep will be enabled
+	xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
+	clearDisplay();
+	// TODO: Move pin managemnt to sleep intent
 	digitalWrite(PIN_LED, LOW);
-	display.hibernate();
-	sleepControl.sleepNow();
+	intentSleep.onStartUp();
 }
 
 void initIntentsArray()
