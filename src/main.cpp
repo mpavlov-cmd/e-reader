@@ -22,6 +22,7 @@
 #include <Battery.h>
 #include <SleepControl.h>
 
+#include <IntentIdentifier.h>
 #include <home/IntentHome.h>
 #include <sleep/IntentSleep.h>
 
@@ -44,10 +45,13 @@
 #define BT_INPUT_1 GPIO_NUM_39 // SENSOR_VN PIN 5
 #define BT_INPUT_2 GPIO_NUM_34 // PIN 6 INPUT ONLY
 
+#define INTENTS_MAX 256
+
 // put function declarations here
 void IRAM_ATTR isr();
 void initDisplay();
 void blink(void* pvParameters);
+void initIntentsArray();
 
 void taskIntentFreq(void* pvParameters);
 void taskStatusDspl(void* pvParameters);
@@ -82,8 +86,10 @@ SemaphoreHandle_t semaphoreHandle;
 TaskHandle_t intentFreqHandle = NULL;
 TaskHandle_t statusDsplHandle = NULL;
 
-// TODO: Define current in tent as nullptr, and pick saved state on wakeup
+// TODO: Define current intent as nullptr, and pick saved state on wakeup
+// TODO: Delete previous intent when the next one is started, do not store all intents to save memory 
 AbstractIntent* intentCurrent = &intentHome;
+AbstractIntent* intentsAll[INTENTS_MAX];
 
 // mapping of Good Display ESP32 Development Kit ESP32-L, e.g. to DESPI-C02
 // BUSY -> GPIO13, RES -> GPIO12, D/C -> GPIO14, CS-> GPIO27, SCK -> GPIO18, SDI -> GPIO23
@@ -92,6 +98,9 @@ void setup()
 	Serial.begin(115200);
 	Serial.println("-------- BOOT SUCCESS --------");
 	Serial.printf("Boot count: %i\n", ++bootCount);
+
+	// Initialize Intents Array
+	initIntentsArray();
 
 	// Configure wake-up source
 	sleepControl.configureExt1WakeUp();
@@ -127,16 +136,24 @@ void loop()
 		
 		// Run action
 		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
+		
 		Serial.print("Action perfromed: ");
 		Serial.println(switchInput, BIN);
 
+		// TODO: Instead of picking new intent from the array delete existing and create new one
 		ActionResult result = intentCurrent->onAction(switchInput);
 		if (result.type == ActionRetultType::CHANGE_INTENT) {
-			// TODO: create mapping between intents and their ids
-			// Exit current intent and start next one
-			intentCurrent->onExit();
-			intentCurrent = &intentSleep;
-			intentCurrent->onStartUp();
+		
+			AbstractIntent* newIntentPtr = intentsAll[result.id];
+			if (newIntentPtr == nullptr) {
+				Serial.printf("No intent with id %i exists.\n", result.id);
+			} else {
+				Serial.printf("Change intent action fired with id: %i\n", result.id);
+				// Exit current intent and start next one
+				intentCurrent->onExit();
+				intentCurrent = intentsAll[result.id];
+				intentCurrent->onStartUp();
+			}			
 		}
 		
 		xSemaphoreGive(semaphoreHandle);
@@ -193,6 +210,18 @@ void blink(void *pvParameters) {
 	digitalWrite(PIN_LED, LOW);
 	display.hibernate();
 	sleepControl.sleepNow();
+}
+
+void initIntentsArray()
+{
+	// Fill with null pointers
+	for (uint8_t i = 0; i < UINT8_MAX; i++) {
+    	intentsAll[i] = nullptr;
+	}
+
+	// Put intents based on their id
+	intentsAll[INTENT_ID_HOME]  = &intentHome;
+	intentsAll[INTENT_ID_SLEEP] = &intentSleep; 
 }
 
 void taskIntentFreq(void *pvParameters)

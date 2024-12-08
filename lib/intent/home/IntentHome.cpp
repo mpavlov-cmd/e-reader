@@ -20,14 +20,12 @@ void IntentHome::onStartUp()
 	// Define menu items
 	Set<MenuItem> menuItems(10);
 
-	// Fill menu
-	MenuItem *booksItem = new MenuItem(1, "Books", true);
-
-	menuItems.addItem(booksItem);
+	// Main menu. For simplifity menu ID here MUST match intent ID
+	menuItems.addItem(new MenuItem(1, "Books", true));
 	menuItems.addItem(new MenuItem(2, "Settings"));
 	menuItems.addItem(new MenuItem(3, "Other"));
 	menuItems.addItem(new MenuItem(4, "One more item for fun"));
-	menuItems.addItem(new MenuItem(5, "Sleep"));
+	menuItems.addItem(new MenuItem(INTENT_ID_SLEEP, "Sleep"));
 
 	menu = new Menu(menuItems);
 
@@ -60,7 +58,7 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 	bool held = false;
 	uint8_t action = controlDirection(actionId, held);
 
-	// Up or nown
+	// Up or down
 	if (action == BUTTON_ACTION_DOWN || action == BUTTON_ACTION_UP)
 	{
 		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
@@ -72,9 +70,26 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 
 	if (action == B00001000)
 	{
-		// TODO: Pick value for return type depending on currently active menu
-		Serial.println("Enter clicked");
-		return {ActionRetultType::CHANGE_INTENT, 1};
+		Serial.println("--- Enter clicked ---");
+
+		// Validate active item and menu id value
+		if (menu->getActiveItem() == nullptr) {
+			return ActionResult::VOID;
+		}
+
+		uint16_t menuItemId = menu->getActiveItem()->getId();
+		if (menuItemId > UINT8_MAX) {
+			return ActionResult::VOID;
+		}
+
+		switch (menuItemId)
+		{
+		case INTENT_ID_SLEEP :
+			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_SLEEP};
+		
+		default:
+			return ActionResult::VOID;
+		}	
 	};
 
 	return ActionResult::VOID;

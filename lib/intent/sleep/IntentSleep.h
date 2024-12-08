@@ -2,13 +2,14 @@
 #define INTENTSLEEP_H
 
 #include <AbstractDisplayIntent.h>
+#include <IntentIdentifier.h>
 
 struct IntentSleep : public AbstractDisplayIntent
 {
 
 public:
     // Constant declaration
-    static constexpr const uint8_t ID = 1;
+    static constexpr const uint8_t ID = INTENT_ID_SLEEP;
 
     IntentSleep(GxEPD2_GFX &display);
 
@@ -23,7 +24,5 @@ public:
     {
     }
 };
-
-// const String const IntentSleep::NAME = "Sleep Intent";
 
 #endif

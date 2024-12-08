@@ -12,6 +12,7 @@
 #include <widget/ClockWidget.h>
 #include <menu/Menu.h>
 #include <ButtonActions.h>
+#include <IntentIdentifier.h>
 
 struct IntentHome : public AbstractDisplayIntent
 {
@@ -29,7 +30,7 @@ struct IntentHome : public AbstractDisplayIntent
 
     public:
         // Constant declaration
-        static constexpr const uint8_t ID = 0;
+        static constexpr const uint8_t ID = INTENT_ID_HOME;
 
         IntentHome(GxEPD2_GFX& display, ESP32Time& espTime,
             FileManager& fm, ImageDrawer& idrawer, MenuWidget& menuWidget, ClockWidget& ClockWidget);
