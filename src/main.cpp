@@ -32,7 +32,7 @@
 #include <SwithInputHandler.h>
 #include <widget/WidgetPower.h>
 
-#define PIN_LED      GPIO_NUM_2  // LED and BOOT MODE
+#define PIN_LED      GPIO_NUM_2  // LED AND BOOT MODE
 
 #define PIN_PWR_DET  GPIO_NUM_25 // CHECK IF HAS EXTERNAL POWER  
 #define PIN_BAT_STAT GPIO_NUM_26 // ANALOG BATTEY PERCENT 
@@ -194,13 +194,14 @@ void initDisplay()
 void blink(void *pvParameters) {
 	pinMode(PIN_LED, OUTPUT);
 	for (;;) {
+		// Blink
 		digitalWrite(PIN_LED, HIGH);
 		vTaskDelay(500 / portTICK_RATE_MS);
 		digitalWrite(PIN_LED, LOW);
 		vTaskDelay(500 / portTICK_RATE_MS);
 
+		// Validate last input and sleep
 		unsigned long lastInputTime = millis() - lastUserInteraction;
-		// Serial.printf("Last Input time %i\n", lastInputTime);
 		if (lastInputTime >= 30000) {
 			Serial.println("Idle timeout reached. Ready to sleep!");
 			break;

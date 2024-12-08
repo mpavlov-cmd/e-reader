@@ -7,6 +7,19 @@
 #include <FileManager.h>
 
 
+struct BmpData {
+    bool isDrawable       = false;
+    uint32_t fileSize     = 0;
+    uint32_t creatorBytes = 0;
+    uint32_t imageOffset  = 0;
+    uint32_t headerSize   = 0;
+    uint32_t width        = 0;
+    int32_t height        = 0;
+    uint16_t planes       = 0;
+    uint16_t depth        = 0;
+    uint32_t format       = 0;
+};
+
 struct ImageDrawer
 {
     private:
@@ -14,8 +27,8 @@ struct ImageDrawer
 
         static const uint16_t input_buffer_pixels = 800; // may affect performance
 
-        static const uint16_t max_row_width = 1448; // for up to 6" display 1448x1072
-        static const uint16_t max_palette_pixels = 256; // for depth <= 8
+        static const uint16_t max_row_width = 1448;      // for up to 6" display 1448x1072
+        static const uint16_t max_palette_pixels = 256;  // for depth <= 8
 
         uint8_t input_buffer[3 * input_buffer_pixels];        // up to depth 24
         uint8_t output_row_mono_buffer[max_row_width / 8];    // buffer for at least one row of b/w bits
@@ -38,6 +51,7 @@ struct ImageDrawer
             bool partial_update
         );
 
+        BmpData getImageData(File& file, bool close);
 };
 
 
