@@ -1,15 +1,14 @@
-#ifndef CLOCKWIDGET_H
-#define CLOCKWIDGET_H
-
+#ifndef WIDGETCLOCK_H
+#define WIDGETCLOCK_H
 
 #include "AbstractWidget.h"
 #include "DateTimeRtc.h"
 
-class ClockWidget : public AbstractWidget<DateTimeRtc>
+class WidgetClock : public AbstractWidget<DateTimeRtc>
 {
     
 public:
-    ClockWidget(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
+    WidgetClock(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
 
 private:
 

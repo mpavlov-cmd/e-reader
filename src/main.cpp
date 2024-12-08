@@ -30,7 +30,7 @@
 #include <ImageDrawer.h>
 #include <text/TextIndex.h>
 #include <SwithInputHandler.h>
-#include <widget/PowerWidget.h>
+#include <widget/WidgetPower.h>
 
 #define PIN_LED      GPIO_NUM_2  // LED and BOOT MODE
 
@@ -72,13 +72,13 @@ FileManager fileManager(SD, PIN_CS_SD);
 TextIndex textIndex(display, fileManager);
 SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
-MenuWidget menuWidget(display);
-ClockWidget clockWidget(display);
-IntentHome intentHome(display, rtc, fileManager, imageDrawer, menuWidget, clockWidget);
+WidgetMenu widgetMenu(display);
+WidgetClock widgetClock(display);
+IntentHome intentHome(display, rtc, fileManager, imageDrawer, widgetMenu, widgetClock);
 IntentSleep intentSleep(display);
 
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
-PowerWidget powerWidget(display);
+WidgetPower widgetPower(display);
 
 // Semaphore to assure scheduled task
 SemaphoreHandle_t semaphoreHandle;
@@ -136,7 +136,7 @@ void loop()
 		
 		// Run action
 		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
-		
+
 		Serial.print("Action perfromed: ");
 		Serial.println(switchInput, BIN);
 
@@ -242,7 +242,7 @@ void taskStatusDspl(void *pvParameters)
 		
 		// Measure and print power metrics
 		PowerMetrics powerMetrics = powerStatus.measure();
-		powerWidget.upgrade(powerMetrics);
+		widgetPower.upgrade(powerMetrics);
 
 		xSemaphoreGive(semaphoreHandle);
 		vTaskDelay(5000 / portTICK_RATE_MS);

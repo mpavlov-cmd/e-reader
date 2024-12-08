@@ -4,11 +4,11 @@
 #include "AbstractWidget.h"
 #include "menu/Menu.h"
 
-class MenuWidget : public AbstractWidget<Menu>
+class WidgetMenu : public AbstractWidget<Menu>
 {
 
 public:
-    MenuWidget(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
+    WidgetMenu(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
 
 private:
     int16_t x = 0, y = 0;

@@ -5,9 +5,9 @@ IntentHome::IntentHome(
 	ESP32Time &espTime,
 	FileManager &fm,
 	ImageDrawer &idrawer,
-	MenuWidget &menuWidget,
-	ClockWidget &clockWidget) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm), imageDrawer(idrawer),
-								menuWidget(menuWidget), clockWidget(clockWidget)
+	WidgetMenu &widgetMenu,
+	WidgetClock &widgetClock) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm), imageDrawer(idrawer),
+								widgetMenu(widgetMenu), widgetClock(widgetClock)
 {
 }
 
@@ -29,8 +29,7 @@ void IntentHome::onStartUp()
 
 	menu = new Menu(menuItems);
 
-	MenuWidget menuWidget(display);
-	menuWidget.upgrade(*menu);
+	widgetMenu.upgrade(*menu);
 }
 
 void IntentHome::onFrequncy()
@@ -42,7 +41,7 @@ void IntentHome::onFrequncy()
 	dt.setValue(espTime.getMonth(), IDX_MON);
 	dt.setValue(espTime.getYear() % 100, IDX_YEAR);
 
-	clockWidget.upgrade(dt);
+	widgetClock.upgrade(dt);
 }
 
 void IntentHome::onExit()
@@ -63,7 +62,7 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 	{
 		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
 		menu->moveActiveItem(direction);
-		menuWidget.upgrade(*menu);
+		widgetMenu.upgrade(*menu);
 
 		return ActionResult::VOID;
 	}

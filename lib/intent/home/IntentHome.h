@@ -8,8 +8,8 @@
 #include <ESP32Time.h>
 #include <FileManager.h>
 #include <ImageDrawer.h>
-#include <widget/MenuWidget.h>
-#include <widget/ClockWidget.h>
+#include <widget/WidgetMenu.h>
+#include <widget/WidgetClock.h>
 #include <menu/Menu.h>
 #include <ButtonActions.h>
 #include <IntentIdentifier.h>
@@ -21,8 +21,8 @@ struct IntentHome : public AbstractDisplayIntent
         FileManager& fileManager;
         ImageDrawer& imageDrawer;
 
-        MenuWidget& menuWidget;
-        ClockWidget& clockWidget;
+        WidgetMenu& widgetMenu;
+        WidgetClock& widgetClock;
 
         // Main menu and clock models
         Menu* menu = nullptr;
@@ -33,7 +33,7 @@ struct IntentHome : public AbstractDisplayIntent
         static constexpr const uint8_t ID = INTENT_ID_HOME;
 
         IntentHome(GxEPD2_GFX& display, ESP32Time& espTime,
-            FileManager& fm, ImageDrawer& idrawer, MenuWidget& menuWidget, ClockWidget& ClockWidget);
+            FileManager& fm, ImageDrawer& idrawer, WidgetMenu& menuWidget, WidgetClock& widgetClock);
 
         void onStartUp() override;
         void onFrequncy() override;

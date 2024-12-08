@@ -6,11 +6,11 @@
 #include <bolt.c> 
 #include <plug.c> 
 
-class PowerWidget : public AbstractWidget<PowerMetrics>
+class WidgetPower : public AbstractWidget<PowerMetrics>
 {
 
 public:
-    PowerWidget(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
+    WidgetPower(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
 
 private: 
 
