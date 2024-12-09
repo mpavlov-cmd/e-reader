@@ -2,10 +2,11 @@
 #define MENU_H
 
 #include <Arduino.h>
-#include <menu/MenuItem.h>
+#include <model/menu/MenuItem.h>
+#include <model/AbstractModel.h>
 #include <set/Set.h>
 
-struct Menu
+struct Menu : public AbstractModel
 {
     private:
         Set<MenuItem> menuItems;
@@ -21,7 +22,7 @@ struct Menu
          * 
          * @param pre-built set of menu items
         */
-        Menu(Set<MenuItem>& itemsSet);
+        Menu(DBox& box, Set<MenuItem>& itemsSet);
 
         /**
          * @returns reference to the set stored in the menu class

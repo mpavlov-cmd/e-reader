@@ -10,7 +10,7 @@
 #include <ImageDrawer.h>
 #include <widget/WidgetMenu.h>
 #include <widget/WidgetClock.h>
-#include <menu/Menu.h>
+#include <model/menu/Menu.h>
 #include <ButtonActions.h>
 #include <IntentIdentifier.h>
 
@@ -26,6 +26,8 @@ struct IntentHome : public AbstractDisplayIntent
 
         // Main menu and clock models
         Menu* menu = nullptr;
+        DBox* menuBox = nullptr;
+
         DateTimeRtc dt = DateTimeRtc();
 
     public:
@@ -44,6 +46,7 @@ struct IntentHome : public AbstractDisplayIntent
 
         ~IntentHome() {
             delete menu;
+            delete menuBox;
         };
 };
 

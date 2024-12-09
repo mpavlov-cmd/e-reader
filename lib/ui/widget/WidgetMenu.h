@@ -2,7 +2,7 @@
 #define MENUWIDGET_H
 
 #include "AbstractWidget.h"
-#include "menu/Menu.h"
+#include "model/menu/Menu.h"
 
 class WidgetMenu : public AbstractWidget<Menu>
 {
@@ -18,7 +18,7 @@ private:
 
     DBox createBox(Menu& widgetData) override
     {
-        return {48, 584, 384, 160, 0, 0};
+        return widgetData.getBox();
     }
 
     void initialize(Menu& widgetData) override {

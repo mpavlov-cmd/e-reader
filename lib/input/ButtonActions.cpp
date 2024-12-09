@@ -2,7 +2,7 @@
 
 uint8_t controlDirection(uint8_t input, bool &held)
 {
-    // Chhek of hold bit is set
+    // Check of hold bit is set
     held = input & B00010000;
 
     // return input without hold bit

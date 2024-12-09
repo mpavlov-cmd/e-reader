@@ -21,13 +21,16 @@ void IntentHome::onStartUp(IntentArgument arg)
 	Set<MenuItem> menuItems(10);
 
 	// Main menu. For simplifity menu ID here MUST match intent ID
-	menuItems.addItem(new MenuItem(1, "Books", true));
+	menuItems.addItem(new MenuItem(INTENT_ID_FILE_SELECTOR, "Select Book", true));
 	menuItems.addItem(new MenuItem(2, "Settings"));
 	menuItems.addItem(new MenuItem(3, "Other"));
 	menuItems.addItem(new MenuItem(4, "One more item for fun"));
 	menuItems.addItem(new MenuItem(INTENT_ID_SLEEP, "Sleep"));
 
-	menu = new Menu(menuItems);
+	// Define Box and Menu
+	// TODO: Avoid allocat
+	menuBox = new DBox{48, 584, 384, 160, 0, 0};
+	menu = new Menu(*menuBox, menuItems);
 
 	widgetMenu.upgrade(*menu);
 }
@@ -85,6 +88,9 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 		{
 		case INTENT_ID_SLEEP:
 			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_SLEEP, IntentArgument::NO_ARG};
+		case INTENT_ID_FILE_SELECTOR:
+			// TODO: Return filename
+			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_FILE_SELECTOR, IntentArgument::NO_ARG};
 		
 		default:
 			return ActionResult::VOID;

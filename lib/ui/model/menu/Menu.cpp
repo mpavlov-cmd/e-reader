@@ -14,7 +14,7 @@ int16_t Menu::getActiveItemIdx()
     return -1;
 }
 
-Menu::Menu(Set<MenuItem>& itemsSet) : menuItems(itemsSet)
+Menu::Menu(DBox& box, Set<MenuItem>& itemsSet) : AbstractModel(box), menuItems(itemsSet)
 {
 }
 

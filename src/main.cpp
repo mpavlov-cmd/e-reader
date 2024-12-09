@@ -23,8 +23,9 @@
 #include <SleepControl.h>
 
 #include <IntentIdentifier.h>
-#include <home/IntentHome.h>
-#include <sleep/IntentSleep.h>
+#include <impl/IntentHome.h>
+#include <impl/IntentFileSelector.h>
+#include <impl/IntentSleep.h>
 
 #include <PowerStatus.h>
 #include <ImageDrawer.h>
@@ -82,6 +83,7 @@ WidgetImage widgetImage(display, imageDrawer, fileManager);
 
 IntentHome intentHome(display, rtc, fileManager, imageDrawer, widgetMenu, widgetClock);
 IntentSleep intentSleep(display, sleepControl, widgetImage);
+IntentFileSelector intentFileSelector(display);
 
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 WidgetPower widgetPower(display);
@@ -236,6 +238,7 @@ void initIntentsArray()
 
 	// Put intents based on their id
 	intentsAll[INTENT_ID_HOME]  = &intentHome;
+	intentsAll[INTENT_ID_FILE_SELECTOR] = &intentFileSelector;
 	intentsAll[INTENT_ID_SLEEP] = &intentSleep; 
 }
 
