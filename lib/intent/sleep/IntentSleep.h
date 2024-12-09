@@ -21,7 +21,7 @@ public:
 
     IntentSleep(GxEPD2_GFX &display, SleepControl &sleepControl, WidgetImage &widgetImage);
 
-    void onStartUp() override;
+    void onStartUp(IntentArgument arg) override;
     void onFrequncy() override;
     void onExit() override;
 

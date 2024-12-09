@@ -3,7 +3,7 @@
 IntentSleep::IntentSleep(GxEPD2_GFX &display, SleepControl& sleepControl, WidgetImage& widgetImage) 
     : AbstractDisplayIntent(display), widgetImage(widgetImage), sleepControl(sleepControl) {}
 
-void IntentSleep::onStartUp() {
+void IntentSleep::onStartUp(IntentArgument arg) {
     Serial.println("Sleep intenet started");
 
     imgModel = {"/.system/img/sleep.bmp", CENTER_CEMNTER};

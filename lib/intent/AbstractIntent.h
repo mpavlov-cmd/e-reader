@@ -4,20 +4,22 @@
 #pragma once
 
 #include <Arduino.h>
+#include <IntentArgument.h>
 
 enum ActionRetultType { VOID, CHANGE_INTENT };
 
 struct ActionResult {
+    static const ActionResult VOID;
+
     ActionRetultType type;
     uint8_t id;
-
-    static const ActionResult VOID;
+    IntentArgument data;
 };
 
 struct AbstractIntent {
 
     public:
-        virtual void onStartUp() = 0;
+        virtual void onStartUp(IntentArgument) = 0;
         virtual void onFrequncy() = 0;
         virtual void onExit() = 0;
 

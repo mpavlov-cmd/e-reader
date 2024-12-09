@@ -126,7 +126,7 @@ void setup()
 	fileManager.begin();
 	initDisplay();
 
-	intentCurrent->onStartUp();
+	intentCurrent->onStartUp(IntentArgument::NO_ARG);
 
 	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 2048, NULL, 1, &intentFreqHandle, 0);
 	xTaskCreatePinnedToCore(taskStatusDspl, "statusDspl", 2048, NULL, 1, &statusDsplHandle, 0);
@@ -159,7 +159,7 @@ void loop()
 				intentCurrent->onExit();
 				clearDisplay();
 				intentCurrent = intentsAll[result.id];
-				intentCurrent->onStartUp();
+				intentCurrent->onStartUp(result.data);
 			}			
 		}
 		
@@ -224,7 +224,7 @@ void blink(void *pvParameters) {
 	clearDisplay();
 	// TODO: Move pin managemnt to sleep intent
 	digitalWrite(PIN_LED, LOW);
-	intentSleep.onStartUp();
+	intentSleep.onStartUp(IntentArgument::NO_ARG);
 }
 
 void initIntentsArray()

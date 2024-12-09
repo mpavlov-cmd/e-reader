@@ -35,7 +35,7 @@ struct IntentHome : public AbstractDisplayIntent
         IntentHome(GxEPD2_GFX& display, ESP32Time& espTime,
             FileManager& fm, ImageDrawer& idrawer, WidgetMenu& menuWidget, WidgetClock& widgetClock);
 
-        void onStartUp() override;
+        void onStartUp(IntentArgument arg) override;
         void onFrequncy() override;
         void onExit() override;
 

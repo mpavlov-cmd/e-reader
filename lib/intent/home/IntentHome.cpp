@@ -11,7 +11,7 @@ IntentHome::IntentHome(
 {
 }
 
-void IntentHome::onStartUp()
+void IntentHome::onStartUp(IntentArgument arg)
 {
 	// Draw Background
 	File file = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
@@ -83,8 +83,8 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 
 		switch (menuItemId)
 		{
-		case INTENT_ID_SLEEP :
-			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_SLEEP};
+		case INTENT_ID_SLEEP:
+			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_SLEEP, IntentArgument::NO_ARG};
 		
 		default:
 			return ActionResult::VOID;
