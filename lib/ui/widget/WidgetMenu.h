@@ -9,6 +9,7 @@ class WidgetMenu : public AbstractWidget<Menu>
 
 public:
     WidgetMenu(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
+    ~WidgetMenu() {}
 
 private:
     int16_t x = 0, y = 0;

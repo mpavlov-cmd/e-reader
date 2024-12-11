@@ -9,6 +9,7 @@ class WidgetClock : public AbstractWidget<DateTimeRtc>
     
 public:
     WidgetClock(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
+    ~WidgetClock() {}
 
 private:
 

@@ -20,6 +20,7 @@ class WidgetImage : public AbstractWidget<ImageModel>
 public:
     WidgetImage(GxEPD2_GFX &mDisplay, ImageDrawer &imageDrawer, FileManager& fileManager) : 
         AbstractWidget(mDisplay), imageDrawer(imageDrawer), fileManager(fileManager) {}
+    ~WidgetImage() {}
 
 private:
 

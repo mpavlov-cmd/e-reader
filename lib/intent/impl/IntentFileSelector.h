@@ -34,7 +34,9 @@ public:
 
     ~IntentFileSelector()
     {
+        Serial.println("IntentFileSelector Destructor Start");
         delete menu;
+        Serial.println("IntentFileSelector Destructor End");
     }
 };
 

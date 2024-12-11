@@ -11,6 +11,7 @@ class WidgetPower : public AbstractWidget<PowerMetrics>
 
 public:
     WidgetPower(GxEPD2_GFX &mDisplay) : AbstractWidget(mDisplay) {}
+    ~WidgetPower() {}
 
 private: 
 
@@ -85,7 +86,6 @@ private:
     void afterPrint(PowerMetrics& widgetData) override {
     
     }
-
 };
 
 #endif

@@ -21,8 +21,8 @@ struct IntentHome : public AbstractDisplayIntent
         FileManager& fileManager;
         ImageDrawer& imageDrawer;
 
-        WidgetMenu& widgetMenu;
-        WidgetClock& widgetClock;
+        WidgetMenu* widgetMenu = nullptr;
+        WidgetClock* widgetClock = nullptr;
 
         // Main menu and clock models
         Menu* menu = nullptr;
@@ -34,8 +34,7 @@ struct IntentHome : public AbstractDisplayIntent
         // Constant declaration
         static constexpr const uint8_t ID = INTENT_ID_HOME;
 
-        IntentHome(GxEPD2_GFX& display, ESP32Time& espTime,
-            FileManager& fm, ImageDrawer& idrawer, WidgetMenu& menuWidget, WidgetClock& widgetClock);
+        IntentHome(GxEPD2_GFX& display, ESP32Time& espTime, FileManager& fm, ImageDrawer& idrawer);
 
         void onStartUp(IntentArgument arg) override;
         void onFrequncy() override;
@@ -45,8 +44,12 @@ struct IntentHome : public AbstractDisplayIntent
         uint8_t getId() override;
 
         ~IntentHome() {
+            Serial.println("IntentHome Destructor Start");
             delete menu;
             delete menuBox;
+            delete widgetMenu;
+            delete widgetClock;
+            Serial.println("IntentHome Destructor End");
         };
 };
 

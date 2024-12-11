@@ -4,15 +4,17 @@ IntentHome::IntentHome(
 	GxEPD2_GFX &display,
 	ESP32Time &espTime,
 	FileManager &fm,
-	ImageDrawer &idrawer,
-	WidgetMenu &widgetMenu,
-	WidgetClock &widgetClock) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm), imageDrawer(idrawer),
-								widgetMenu(widgetMenu), widgetClock(widgetClock)
+	ImageDrawer &idrawer) : AbstractDisplayIntent(display), espTime(espTime), fileManager(fm), imageDrawer(idrawer)
 {
 }
 
 void IntentHome::onStartUp(IntentArgument arg)
 {
+
+	// Create widgets
+	widgetMenu = new WidgetMenu(display);
+	widgetClock = new WidgetClock(display);
+
 	// Draw Background
 	File file = fileManager.openFile("/background/ninja2.bmp", FILE_READ);
 	imageDrawer.drawBitmapFromSD_Buffered(file, 0, 0, false, false);
@@ -32,7 +34,7 @@ void IntentHome::onStartUp(IntentArgument arg)
 	menuBox = new DBox{48, 584, 384, 160, 0, 0};
 	menu = new Menu(*menuBox, menuItems);
 
-	widgetMenu.upgrade(*menu);
+	widgetMenu->upgrade(*menu);
 }
 
 void IntentHome::onFrequncy()
@@ -44,7 +46,7 @@ void IntentHome::onFrequncy()
 	dt.setValue(espTime.getMonth(), IDX_MON);
 	dt.setValue(espTime.getYear() % 100, IDX_YEAR);
 
-	widgetClock.upgrade(dt);
+	widgetClock->upgrade(dt);
 }
 
 void IntentHome::onExit()
@@ -65,7 +67,7 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 	{
 		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
 		menu->moveActiveItem(direction);
-		widgetMenu.upgrade(*menu);
+		widgetMenu->upgrade(*menu);
 
 		return ActionResult::VOID;
 	}
