@@ -84,14 +84,15 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 			return ActionResult::VOID;
 		}
 
+		// From main menu go to FS root
+		IntentArgument fileSelectorFsRoot("/");
+
 		switch (menuItemId)
 		{
 		case INTENT_ID_SLEEP:
 			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_SLEEP, IntentArgument::NO_ARG};
 		case INTENT_ID_FILE_SELECTOR:
-			// TODO: Return filename
-			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_FILE_SELECTOR, IntentArgument::NO_ARG};
-		
+			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_FILE_SELECTOR, fileSelectorFsRoot};
 		default:
 			return ActionResult::VOID;
 		}	

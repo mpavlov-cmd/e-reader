@@ -1,5 +1,7 @@
 #include "FileManager.h"
 
+const DirIndexConf DirIndexConf::FULL = {true, true, false, nullptr};
+
 FileManager::FileManager(fs::FS &fs, const uint8_t csPin) : fs(fs), csPin(csPin)
 {
 }
@@ -40,28 +42,29 @@ File FileManager::openFile(const char *path, const char *mode)
     return fs.open(path, mode);
 }
 
-DirIndex FileManager::indexDirectory(const char *path, const DirIndexConf& conf)
+bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<FileIndex>& result)
 {
-    DirIndex dirIndex;
-
     File root = fs.open(path);
+    Serial.printf("Opening directory: %s\n", path);
 
     // TODO: Duplicate code
     if (!root)
     {
         Serial.println("Failed to open directory");
-        return dirIndex;
+        return false;
     }
     if (!root.isDirectory())
     {
         Serial.println("Not a directory");
-        return dirIndex;
+        root.close();
+        return false;
     }
 
     // Init Dir Index
     File file = root.openNextFile();
     while (file)
     {
+        Serial.printf("Opening file: %s\n", file.name());
         if (!conf.showDir && file.isDirectory())
         {
             closeAndOpenNext(root, file);
@@ -84,19 +87,21 @@ DirIndex FileManager::indexDirectory(const char *path, const DirIndexConf& conf)
             continue;
         }
 
+        Serial.printf("Found file ext: %s\n", fileExt);
+
         FileIndex *fileIndex = new FileIndex(file.name(), file.path(), fileExt, file.size(), file.isDirectory());
-        dirIndex.add(fileIndex);
+        result.addItem(fileIndex);
 
         closeAndOpenNext(root, file);
     }
 
     root.close();
-    return dirIndex;
+    return true;
 }
 
 const char *FileManager::findFileExtension(const char *filename)
 {
-    const char *dot = nullptr;
+    const char *dot = "";
 
     // Traverse the string to find the last dot '.'
     for (int i = 0; filename[i] != '\0'; i++) {

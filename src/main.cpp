@@ -83,7 +83,7 @@ WidgetImage widgetImage(display, imageDrawer, fileManager);
 
 IntentHome intentHome(display, rtc, fileManager, imageDrawer, widgetMenu, widgetClock);
 IntentSleep intentSleep(display, sleepControl, widgetImage);
-IntentFileSelector intentFileSelector(display);
+IntentFileSelector intentFileSelector(display, fileManager);
 
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 WidgetPower widgetPower(display);

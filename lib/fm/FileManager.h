@@ -4,9 +4,13 @@
 #include <Arduino.h>
 #include <FS.h>
 #include <SD.h>
-#include <index/DirIndex.h>
+#include <set/Set.h>
+#include <index/FileIndex.h>
 
 struct DirIndexConf {
+
+    static const DirIndexConf FULL;
+
     const boolean showDir;
     const boolean showHidden;
     const boolean filterByExt;
@@ -23,7 +27,6 @@ private:
     uint64_t cardSize = 0;
 
 public:
-    const DirIndexConf DIR_IDX_FULL = {false, false, false, nullptr};
 
     FileManager(fs::FS &fs, const uint8_t csPin);
 
@@ -53,12 +56,13 @@ public:
 
     /**
      * @param path to the directory where files should be counted
-     * @param showDir indicates if DirIndex should contain only files or directories as well
-     * @param showHidden indicates wether hidden files should be shown
-     *
-     * @returns DirIndex object. The object will be copied to the calling code. This is fine
+     * @param conf indexer configuration
+     * @param result directory index result passed as a param for perfroamnce optimiztion
+     * The implementation is not responsible for clearing the result before suage
+     * 
+     * @returns true in case of succesfull index, false otherwise
      */
-    DirIndex indexDirectory(const char *path, const DirIndexConf& conf);
+    bool indexDirectory(const char *path, const DirIndexConf conf, Set<FileIndex>& result);
 
     /**
      * Fild file extention

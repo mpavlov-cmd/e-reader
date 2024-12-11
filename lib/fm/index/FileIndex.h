@@ -18,6 +18,7 @@ struct FileIndex
 
     public:
 
+        // Primary
         FileIndex(
             const char* fileName,
             const char* filePath,
@@ -26,7 +27,11 @@ struct FileIndex
             const boolean isDirectry
         );
 
-        FileIndex();
+        // Secondary
+        // TODO: Add empty string constant
+        FileIndex() : FileIndex("", "", "", 0, false) {};
+        FileIndex(const FileIndex& other) :
+            FileIndex(other.name, other.path, other.ext, other.size, other.isDir) {}; 
 
         const char* getName();
         const char* getPath();
