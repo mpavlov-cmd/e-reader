@@ -1,15 +1,17 @@
 #include "IntentSleep.h"
 
-IntentSleep::IntentSleep(GxEPD2_GFX &display, SleepControl& sleepControl, WidgetImage& widgetImage) 
-    : AbstractDisplayIntent(display), widgetImage(widgetImage), sleepControl(sleepControl) {}
+IntentSleep::IntentSleep(GxEPD2_GFX &display, SleepControl& sleepControl, ImageDrawer& imageDrawer, FileManager& fileManager) 
+    : AbstractDisplayIntent(display), sleepControl(sleepControl), imageDrawer(imageDrawer), fileManager(fileManager) {}
 
 void IntentSleep::onStartUp(IntentArgument arg) {
     Serial.println("Sleep intenet started");
 
+    widgetImage = new WidgetImage(display, imageDrawer, fileManager);
+
     imgModel = {"/.system/img/sleep.bmp", CENTER_CEMNTER};
-    widgetImage.upgrade(imgModel);
+    widgetImage->upgrade(imgModel);
     
-    // TODO: Write LED to LOW, move pin definitions to a separate conf library
+	digitalWrite(PIN_LED, LOW);
     display.hibernate();
     sleepControl.sleepNow();
 }

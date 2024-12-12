@@ -2,6 +2,7 @@
 #define SERIAL_DEBUG_ENABLED 1
 
 #include <Arduino.h>
+#include <PinDefinitions.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -33,28 +34,18 @@
 #include <SwithInputHandler.h>
 #include <widget/WidgetPower.h>
 
-#define PIN_LED      GPIO_NUM_2  // LED AND BOOT MODE
-
-#define PIN_PWR_DET  GPIO_NUM_25 // CHECK IF HAS EXTERNAL POWER  
-#define PIN_BAT_STAT GPIO_NUM_26 // ANALOG BATTEY PERCENT 
-#define PIN_CS_SD    GPIO_NUM_27 // SD CHIP SELECT
-
-#define PIN_CHG_DET  GPIO_NUM_35 // HIGH OR LOW WHEN BATTERY CHARGING
-
-// PIN definitions for input
-#define BT_INPUT_0 GPIO_NUM_36 // SENSOR_VP PIN 4
-#define BT_INPUT_1 GPIO_NUM_39 // SENSOR_VN PIN 5
-#define BT_INPUT_2 GPIO_NUM_34 // PIN 6 INPUT ONLY
-
 #define SLEEP_TIMEOUT_MILLS 60 * 1000
 
 // put function declarations here
 void IRAM_ATTR isr();
+
 void initDisplay();
 void clearDisplay();
-void blink(void* pvParameters);
-void buildIntent(uint8_t intentId);
 
+void buildIntent(uint8_t intentId);
+void switchIntent(uint8_t intentId, IntentArgument intentArgument);
+
+void blink(void* pvParameters);
 void taskIntentFreq(void* pvParameters);
 void taskStatusDspl(void* pvParameters);
 
@@ -76,9 +67,6 @@ SwithInputHandler inputHandler(BT_INPUT_2, BT_INPUT_1, BT_INPUT_0);
 ImageDrawer imageDrawer(display);
 
 WidgetImage widgetImage(display, imageDrawer, fileManager);
-
-IntentSleep intentSleep(display, sleepControl, widgetImage);
-IntentFileSelector intentFileSelector(display, fileManager);
 
 PowerStatus powerStatus(PIN_PWR_DET, PIN_CHG_DET, PIN_BAT_STAT);
 WidgetPower widgetPower(display);
@@ -138,17 +126,11 @@ void loop()
 		Serial.println(switchInput, BIN);
 
 		ActionResult result = intentCurrent->onAction(switchInput);
+
+		// Exit current intent and start next one
 		if (result.type == ActionRetultType::CHANGE_INTENT) {
 			Serial.printf("Change intent action fired with id: %i\n", result.id);
-			// Exit current intent and start next one
-			intentCurrent->onExit();
-			delete intentCurrent;
-
-			// Init new intent based on the id under the hood will assign new intent to intent current
-			buildIntent(result.id);
-
-			clearDisplay();
-			intentCurrent->onStartUp(result.data);
+			switchIntent(result.id, result.data);
 		}
 		
 		xSemaphoreGive(semaphoreHandle);
@@ -209,10 +191,15 @@ void blink(void *pvParameters) {
 
 	// Will not give back semaphore, because deep sleep will be enabled
 	xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
-	clearDisplay();
-	// TODO: Move pin managemnt to sleep intent
-	digitalWrite(PIN_LED, LOW);
-	intentSleep.onStartUp(IntentArgument::NO_ARG);
+	
+	// Sweet dreams are made of tears
+	switchIntent(INTENT_ID_SLEEP, IntentArgument::NO_ARG);
+	// clearDisplay();
+
+	// intentCurrent->onExit();
+	// delete intentCurrent;
+	// // TODO: Move pin managemnt to sleep intent
+	// intentSleep.onStartUp(IntentArgument::NO_ARG);
 }
 
 void buildIntent(uint8_t intentId)
@@ -226,12 +213,24 @@ void buildIntent(uint8_t intentId)
 		intentCurrent = new IntentFileSelector(display, fileManager);
 		break;
 	case INTENT_ID_SLEEP:
-		intentCurrent = new IntentSleep(display, sleepControl, widgetImage);
+		intentCurrent = new IntentSleep(display, sleepControl, imageDrawer, fileManager);
 		break;
 	default:
 		intentCurrent = new IntentHome(display, rtc, fileManager, imageDrawer);
 		break;
 	}
+}
+
+void switchIntent(uint8_t intentId, IntentArgument intentArgument)
+{
+	intentCurrent->onExit();
+	delete intentCurrent;
+
+	// Init new intent based on the id under the hood will assign new intent to intent current
+	buildIntent(intentId);
+
+	clearDisplay();
+	intentCurrent->onStartUp(intentArgument);
 }
 
 void taskIntentFreq(void *pvParameters)

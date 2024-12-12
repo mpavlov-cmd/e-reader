@@ -5,21 +5,24 @@
 #include <IntentIdentifier.h>
 #include <widget/WidgetImage.h>
 #include <SleepControl.h>
+#include <PinDefinitions.h>
 
 struct IntentSleep : public AbstractDisplayIntent
 {
 
 private: 
     SleepControl& sleepControl;
-    WidgetImage& widgetImage;
+    ImageDrawer& imageDrawer;
+    FileManager& fileManager;
 
+    WidgetImage* widgetImage = nullptr;
     ImageModel imgModel;
 
 public:
     // Constant declaration
     static constexpr const uint8_t ID = INTENT_ID_SLEEP;
 
-    IntentSleep(GxEPD2_GFX &display, SleepControl &sleepControl, WidgetImage &widgetImage);
+    IntentSleep(GxEPD2_GFX &display, SleepControl &sleepControl, ImageDrawer& imageDrawer, FileManager& fileManager);
 
     void onStartUp(IntentArgument arg) override;
     void onFrequncy() override;
@@ -30,6 +33,7 @@ public:
 
     ~IntentSleep()
     {
+        delete widgetImage;
     }
 };
 
