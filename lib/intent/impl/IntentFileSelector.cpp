@@ -27,12 +27,11 @@ void IntentFileSelector::onStartUp(IntentArgument arg)
 
     // (480 - 432) / 2 = 24
     // (800 - 704) / 2 = 48    
-    // TODO: move box and menu to private class variable;
-    DBox box{24, 48, 432, 704, 0, 0};
-    Menu menu(box, menuItems);
+    menuBox = new DBox{24, 48, 432, 704, 0, 0};
+    menu = new Menu(*menuBox, menuItems);
 
     widgetMenu = new WidgetMenu(display);
-    widgetMenu->upgrade(menu);
+    widgetMenu->upgrade(*menu);
 }
 
 void IntentFileSelector::onFrequncy()
@@ -48,8 +47,28 @@ void IntentFileSelector::onExit()
 ActionResult IntentFileSelector::onAction(uint16_t actionId)
 {
     // TODO: Implemeng button navigation, when menu item is selected: either call change intent to self, or go back
+    Serial.printf("Inside of action: %i\n", actionId);
 
-    // Temp, allows to go back home
+    // TODO: Duplicate codel see IntnetHome
+	// Extract hold bit for easy use
+	bool held = false;
+	uint8_t action = controlDirection(actionId, held);
+
+	// Up or down
+	if (action == BUTTON_ACTION_DOWN || action == BUTTON_ACTION_UP)
+	{
+		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
+		menu->moveActiveItem(direction);
+		widgetMenu->upgrade(*menu);
+
+		return ActionResult::VOID;
+	}
+
+	if (action == B00001000)
+	{
+		Serial.println("--- Enter clicked ---");
+    }
+
     return {ActionRetultType::CHANGE_INTENT, INTENT_ID_HOME, IntentArgument::NO_ARG};
 }
 

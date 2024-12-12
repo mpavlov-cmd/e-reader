@@ -6,6 +6,7 @@
 #include <FileManager.h>
 #include <model/menu/Menu.h>
 #include <widget/WidgetMenu.h>
+#include <ButtonActions.h>
 
 struct IntentFileSelector : public AbstractDisplayIntent
 {
@@ -18,6 +19,7 @@ private:
     // Owned by intent
     Set<FileIndex> dirIndex; 
     Menu* menu = nullptr;
+    DBox* menuBox = nullptr;
     WidgetMenu* widgetMenu = nullptr;
 
 
@@ -38,6 +40,8 @@ public:
     {
         Serial.println("IntentFileSelector Destructor Start");
         delete menu;
+        delete menuBox;
+        delete widgetMenu;
         Serial.println("IntentFileSelector Destructor End");
     }
 };

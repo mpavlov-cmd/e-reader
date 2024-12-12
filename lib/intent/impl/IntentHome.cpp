@@ -59,6 +59,7 @@ ActionResult IntentHome::onAction(uint16_t actionId)
 	Serial.printf("Inside of action: %i\n", actionId);
 
 	// Extract hold bit for easy use
+	// TODO: Duplicate codel see IntentFileSelector
 	bool held = false;
 	uint8_t action = controlDirection(actionId, held);
 
