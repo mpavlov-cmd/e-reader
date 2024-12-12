@@ -194,12 +194,6 @@ void blink(void *pvParameters) {
 	
 	// Sweet dreams are made of tears
 	switchIntent(INTENT_ID_SLEEP, IntentArgument::NO_ARG);
-	// clearDisplay();
-
-	// intentCurrent->onExit();
-	// delete intentCurrent;
-	// // TODO: Move pin managemnt to sleep intent
-	// intentSleep.onStartUp(IntentArgument::NO_ARG);
 }
 
 void buildIntent(uint8_t intentId)

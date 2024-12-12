@@ -5,6 +5,7 @@
 #include <IntentIdentifier.h>
 #include <FileManager.h>
 #include <model/menu/Menu.h>
+#include <widget/WidgetMenu.h>
 
 struct IntentFileSelector : public AbstractDisplayIntent
 {
@@ -17,6 +18,7 @@ private:
     // Owned by intent
     Set<FileIndex> dirIndex; 
     Menu* menu = nullptr;
+    WidgetMenu* widgetMenu = nullptr;
 
 
 public:
