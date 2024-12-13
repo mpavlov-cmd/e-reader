@@ -13,10 +13,10 @@ struct IntentFileSelector : public AbstractDisplayIntent
 
 private:
     static constexpr const uint16_t MAX_FILES = 1024;
+    static constexpr const char* DIR = "<DIR>";
 
     FileManager& fileManager;
 
-    // Owned by intent
     Set<FileIndex> dirIndex; 
     Menu* menu = nullptr;
     DBox* menuBox = nullptr;

@@ -1,7 +1,23 @@
 #include "MenuItem.h"
 
-MenuItem::MenuItem(const uint16_t mId, const char *mName, bool mIsActive = false): id(mId), name(mName), isActive(mIsActive)
+MenuItem::MenuItem(const uint16_t mId, const char *mName, const char* mValue, bool mIsActive = false):
+    id(mId), isActive(mIsActive)
 {
+    // Allocate and copy name
+    if (mName) {
+        name = new char[strlen(mName) + 1];
+        strcpy(const_cast<char*>(name), mName);
+    } else {
+        name = nullptr;
+    }
+
+    // Allocate and copy value
+    if (mValue) {
+        value = new char[strlen(mValue) + 1];
+        strcpy(const_cast<char*>(value), mValue);
+    } else {
+        value = nullptr;
+    }
 }
 
 

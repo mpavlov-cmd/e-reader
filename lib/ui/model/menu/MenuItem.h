@@ -8,17 +8,22 @@ struct MenuItem
     private:
         const uint16_t id;
         const char* name;
+        const char* value;
         bool isActive = false;
 
     public:
         // Primary 
-        MenuItem(const uint16_t mId, const char* mName, bool mIsActive);
+        MenuItem(const uint16_t mId, const char* mName, const char* value, bool mIsActive);
 
         // Secondary
-        MenuItem(const uint16_t mId, const char* mName): MenuItem(mId, mName, false) {};
-        MenuItem(const MenuItem& other) : MenuItem(other.id, other.name, other.isActive) {}; 
+        MenuItem(const uint16_t mId, const char* mName, bool mIsActive): MenuItem(mId, mName, nullptr, mIsActive) {};
+        MenuItem(const uint16_t mId, const char* mName): MenuItem(mId, mName, nullptr, false) {};
+        MenuItem(const MenuItem& other) : MenuItem(other.id, other.name, other.value, other.isActive) {}; 
 
-        ~MenuItem() {};
+        ~MenuItem() {
+            delete name;
+            delete value;
+        };
 
         uint16_t getId();
         const char* getName();

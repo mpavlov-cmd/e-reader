@@ -18,10 +18,25 @@ void IntentFileSelector::onStartUp(IntentArgument arg)
     for (uint16_t i = 0; i < dirIndex.size(); i++) {
 
         FileIndex* fi = dirIndex.getItem(i);
+        bool isActive = i==0;
         Serial.printf("File: %s isDirectory: %i\n", fi->getName(), fi->getIsDirectry());
 
-        // TODO: Extend menu with value and icon
-        MenuItem* menuItem = new MenuItem(i, fi->getName(), i==0);
+        MenuItem* menuItem = nullptr;
+        if (fi->getIsDirectry()) {
+            size_t newLength = strlen(DIR) + strlen(fi->getName()) + 1; // +1 for null terminator
+            char* newValue = new char[newLength];
+
+            // Combine the strings
+            strcpy(newValue, DIR);
+            strcat(newValue, fi->getName());
+
+            menuItem = new MenuItem(i, newValue, fi->getPath(), isActive);
+            delete newValue;
+        } else {
+            menuItem = new MenuItem(i, fi->getName(), fi->getPath(), isActive);
+        }
+
+        // Add item to the menu
         menuItems.addItem(menuItem);
     }
 
@@ -47,6 +62,7 @@ void IntentFileSelector::onExit()
 ActionResult IntentFileSelector::onAction(uint16_t actionId)
 {
     // TODO: Implemeng button navigation, when menu item is selected: either call change intent to self, or go back
+    // TODO: Allow to go back to the previous dir level
     Serial.printf("Inside of action: %i\n", actionId);
 
     // TODO: Duplicate codel see IntnetHome
