@@ -68,7 +68,7 @@ private:
             display.drawBitmap(pluggedBox.x, pluggedBox.y, icon, pluggedBox.width, 12, GxEPD_BLACK);
         }
 
-        // TODO: Figure out whu 
+        // TODO: Figure out why % is not sown in case of 100
         char resultBuffer[5]; // 3 for the number, 1 for %, and 1 for null terminator
         uint8_t levelPercent = widgetData.battLevelPercent;
         snprintf(resultBuffer, sizeof(resultBuffer), "%3d%%", levelPercent);

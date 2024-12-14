@@ -100,6 +100,7 @@ bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<
     return true;
 }
 
+// TODO: Potentially move to file utils
 const char *FileManager::findFileExtension(const char *filename)
 {
     const char *dot = "";
@@ -115,6 +116,7 @@ const char *FileManager::findFileExtension(const char *filename)
     return dot;
 }
 
+// TODO: Rewrite to avoid static char allocation findFileExtension method 
 const char* FileManager::getParentDir(const char *path)
 {
     const char *lastSlash = strrchr(path, '/'); // Find the last occurrence of '/'
@@ -190,6 +192,7 @@ void FileManager::removeDirRecursive(const char *path)
     Serial.printf("Deleted root directory: %s\n", path);
 }
 
+// TODO: Rewrite to avoid static char allocation findFileExtension method 
 const char *FileManager::getPreviousLevel(const char *path)
 {
     // Check if the input path is root "/"
@@ -219,9 +222,12 @@ const char *FileManager::getPreviousLevel(const char *path)
             }
 
             // Allocate a new string for the previous level
-            static char previousLevel[256]; // Adjust size as needed for your environment
+            // When static variable allocation is used, the space will be reserverd in static mameory once and forever. 
+            // Thus, no need to do a cleanup
+            thread_local static char previousLevel[256]; // Adjust size as needed for your environment
             strncpy(previousLevel, path, i - 1);
             previousLevel[i - 1] = '\0';
+
             return previousLevel;
         }
     }

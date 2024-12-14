@@ -47,6 +47,7 @@ class AbstractWidget
 
             // Draw box 
             display.setPartialWindow(box.x, box.y, box.width, box.height);
+            display.firstPage();
             do {
                 // Diaplay box
                 display.fillRect(box.x, box.y, box.width, box.height, GxEPD_WHITE);
