@@ -18,8 +18,9 @@ private:
     FileManager& fileManager;
 
     Set<FileIndex> dirIndex; 
+    DBox menuBox{24, 48, 432, 704, 0, 0};
+
     Menu* menu = nullptr;
-    DBox* menuBox = nullptr;
     WidgetMenu* widgetMenu = nullptr;
 
 
@@ -40,7 +41,6 @@ public:
     {
         Serial.println("IntentFileSelector Destructor Start");
         delete menu;
-        delete menuBox;
         delete widgetMenu;
         Serial.println("IntentFileSelector Destructor End");
     }

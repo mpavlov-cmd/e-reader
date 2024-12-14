@@ -31,6 +31,11 @@ const char* MenuItem::getName()
     return name;
 }
 
+const char *MenuItem::getValue()
+{
+    return value;
+}
+
 bool MenuItem::getIsActive()
 {
     return isActive;

@@ -27,6 +27,7 @@ struct MenuItem
 
         uint16_t getId();
         const char* getName();
+        const char* getValue();
         bool getIsActive();
         void setIsActive(bool active);
 };

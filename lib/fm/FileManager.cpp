@@ -39,13 +39,14 @@ bool FileManager::exists(const char *path)
 
 File FileManager::openFile(const char *path, const char *mode)
 {
+    Serial.printf("Opening file: %s\n", path);
     return fs.open(path, mode);
 }
 
 bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<FileIndex>& result)
 {
+    Serial.printf("Indexing directory: %s\n", path);
     File root = fs.open(path);
-    Serial.printf("Opening directory: %s\n", path);
 
     // TODO: Duplicate code
     if (!root)
@@ -187,6 +188,46 @@ void FileManager::removeDirRecursive(const char *path)
     root.close();
     fs.rmdir(path);
     Serial.printf("Deleted root directory: %s\n", path);
+}
+
+const char *FileManager::getPreviousLevel(const char *path)
+{
+    // Check if the input path is root "/"
+    if (strcmp(path, "/") == 0)
+    {
+        return "/";
+    }
+
+    // Determine the length of the path
+    size_t length = strlen(path);
+
+    // Remove trailing slash if present (but ensure root "/" is unchanged)
+    if (length > 1 && path[length - 1] == '/')
+    {
+        length--;
+    }
+
+    // Find the last slash in the adjusted path
+    for (size_t i = length; i > 0; --i)
+    {
+        if (path[i - 1] == '/')
+        {
+            // If the last slash is at the beginning, return root
+            if (i == 1)
+            {
+                return "/";
+            }
+
+            // Allocate a new string for the previous level
+            static char previousLevel[256]; // Adjust size as needed for your environment
+            strncpy(previousLevel, path, i - 1);
+            previousLevel[i - 1] = '\0';
+            return previousLevel;
+        }
+    }
+
+    // If no slash is found, return root (this shouldn't occur with valid input)
+    return "/";
 }
 
 void FileManager::listDir(const char *dirname, uint8_t levels)

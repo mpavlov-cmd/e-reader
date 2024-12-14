@@ -111,6 +111,22 @@ public:
     */
     void removeDirRecursive(const char *path);
 
+    /**
+     * Utility method that would accept directry patch and return one level up directory
+     * Works without dynamic memory allocation
+     * Example: 
+     * 
+     * "/books" → "/"
+     * "/books/current" → "/books"
+     * "/books/current/" → "/books"
+     * "/" → "/"
+     * 
+     * @param directory path
+     * @return prent level directory or "/" in case FS root
+     * 
+     */
+    const char* getPreviousLevel(const char* path);
+
 
     // TODO: Here as an example. Review what's needed
     void listDir(const char *dirname, uint8_t levels);
