@@ -5,10 +5,10 @@
     - [x] Add Sleep Intent, SleepIntent::onStartup() would put device into deep sleep
     - [x] Implement return type for OnAction to switch intenets in main
     - [x] Implement image widget
-- [ ] Imlement file manager UI which should work with DirIndex and would allow to select file as a separate intent
-    - [ ] Enchance MenuItem class to add icon and value
-    - [ ] Add controls to file selector, add ability to enter folder
-    - [ ] Add widget to show current folder
+- [x] Imlement file manager UI which should work with DirIndex and would allow to select file as a separate intent
+    - [x] Enchance MenuItem class to add icon and value
+    - [x] Add controls to file selector, add ability to enter folder
+    - [x] Add widget to show current folder
     - [ ] Add file info widget
 - [ ] Implement Book Intent with an abilities to: Show current page, show naviagtion bar (book percent, line, total pages)
 - [ ] Implement the flow where the device will wake-up and check wakup reason, if it is timer, it should not refresh full display, instead it should update clock and battery charge (probably separaete intend) and go back to sleep. In case wakeup reason is ext1 (joystick) full wakup should happen.

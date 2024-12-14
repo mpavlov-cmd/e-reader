@@ -18,11 +18,13 @@ private:
     FileManager& fileManager;
 
     Set<FileIndex> dirIndex; 
+    String currentPath = "/";
     DBox menuBox{24, 48, 432, 704, 0, 0};
 
     Menu* menu = nullptr;
     WidgetMenu* widgetMenu = nullptr;
 
+    void prepareAndRnderDir(const char* path);
 
 public:
     // Constant declaration

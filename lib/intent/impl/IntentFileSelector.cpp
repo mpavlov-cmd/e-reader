@@ -1,32 +1,23 @@
 #include "IntentFileSelector.h"
 
-IntentFileSelector::IntentFileSelector(GxEPD2_GFX &display, FileManager& fileManager) 
-: AbstractDisplayIntent(display), fileManager(fileManager), dirIndex(MAX_FILES)
+void IntentFileSelector::prepareAndRnderDir(const char *path)
 {
-}
-
-void IntentFileSelector::onStartUp(IntentArgument arg)
-{
-    Serial.printf("Intent FileSelector On Startup Called with argument: %s\n", arg.strValue);
-    const char* rootPath = arg.strValue == nullptr ? "/" : arg.strValue;
-    const char* levelUpPath = fileManager.getPreviousLevel(rootPath);
-
-    Serial.printf("rootPath: %s\n", rootPath);
-    Serial.printf("levelUpPath: %s\n", levelUpPath);
+    // Save current path 
+    currentPath = path;
+    
+    const char* levelUpPath = fileManager.getPreviousLevel(path);
 
     // Init menu items
     Set<MenuItem> menuItems(MAX_FILES);
 
     // Add top level item
-    MenuItem* parentLevelitem = new MenuItem(0, "<DIR>..", levelUpPath, false);
+    String dirString = String(DIR) + "..";
+    MenuItem* parentLevelitem = new MenuItem(0, dirString.c_str(), levelUpPath, false);
     menuItems.addItem(parentLevelitem);
 
     // Build dir index
     dirIndex.clear();
-    Serial.printf("rootPath2: %s\n", rootPath);
-    Serial.printf("arg.strValue: %s\n", arg.strValue);
-    
-    bool indexed = fileManager.indexDirectory(rootPath, DirIndexConf::FULL, dirIndex);
+    bool indexed = fileManager.indexDirectory(path, DirIndexConf::FULL, dirIndex);
 
     for (uint16_t i = 0; i < dirIndex.size(); i++) {
 
@@ -58,6 +49,20 @@ void IntentFileSelector::onStartUp(IntentArgument arg)
     menu = new Menu(menuBox, menuItems);
     widgetMenu = new WidgetMenu(display);
     widgetMenu->upgrade(*menu);
+}
+
+IntentFileSelector::IntentFileSelector(GxEPD2_GFX &display, FileManager &fileManager)
+    : AbstractDisplayIntent(display), fileManager(fileManager), dirIndex(MAX_FILES)
+{
+}
+
+void IntentFileSelector::onStartUp(IntentArgument arg)
+{
+    Serial.printf("Intent FileSelector On Startup Called with argument: %s\n", arg.strValue);
+    const char* rootPath = arg.strValue == nullptr ? "/" : arg.strValue;
+
+    prepareAndRnderDir(rootPath);
+
 }
 
 void IntentFileSelector::onFrequncy()
@@ -103,7 +108,8 @@ ActionResult IntentFileSelector::onAction(uint16_t actionId)
         File selectedFile = fileManager.openFile(newFilePath, FILE_READ);
         bool isDirectory = selectedFile.isDirectory();
 
-        // Mae sure the value is copied, otherwise after file is closed pointer would break
+        // Make sure the value is copied, otherwise after file is closed pointer would break
+        // TODO: probaby rewrite using strcpy
         String storedPath(selectedFile.path());
         selectedFile.close();
 
@@ -112,12 +118,18 @@ ActionResult IntentFileSelector::onAction(uint16_t actionId)
             return ActionResult::VOID;
         }
 
+        const char* storedPacthCa = storedPath.c_str();
+
+        // TODO: Exit widget in case dir is called on root
+        if (currentPath == "/" && strcmp("/", storedPacthCa) == 0) {
+            return {ActionRetultType::CHANGE_INTENT, INTENT_ID_HOME, IntentArgument::NO_ARG};
+        }
+
         // File is directory
         delete menu;
         delete widgetMenu;
 
-        IntentArgument newDirArgument(storedPath.c_str());
-        onStartUp(newDirArgument);
+        prepareAndRnderDir(storedPacthCa);
         
         return ActionResult::VOID;
     }
