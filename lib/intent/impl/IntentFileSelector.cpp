@@ -100,19 +100,27 @@ ActionResult IntentFileSelector::onAction(ActionArgument arg)
     File selectedFile = fileManager.openFile(newFilePath, FILE_READ);
     bool isDirectory = selectedFile.isDirectory();
 
-    // Make sure the value is copied, otherwise after file is closed pointer would break
-    // TODO: probaby rewrite using strcpy
-    String storedPath(selectedFile.path());
+    // Make sure the value is copied, otherwise after file is closed pointer would be deleted
+    static char storedPacthCa[256]; 
+    strncpy(storedPacthCa, selectedFile.path(), sizeof(storedPacthCa) - 1);
+    storedPacthCa[sizeof(storedPacthCa) - 1] = '\0'; 
+
     selectedFile.close();
 
+    // Get char array for the stored path 
     if (!isDirectory) {
-        // TODO: Fire intend ased on the fie extention
+        const char* fileExt = fileManager.findFileExtension(storedPacthCa);
+
+        // Choose new intent based on the extention
+        if (strcmp("txt", fileExt) == 0) {
+            IntentArgument bookArg(storedPacthCa);
+            return {ActionRetultType::CHANGE_INTENT, INTENT_ID_BOOK, bookArg};
+        }
+
         return ActionResult::VOID;
     }
 
-    const char* storedPacthCa = storedPath.c_str();
 
-    // TODO: Exit widget in case dir is called on root
     if (currentPath == "/" && strcmp("/", storedPacthCa) == 0) {
         return {ActionRetultType::CHANGE_INTENT, INTENT_ID_HOME, IntentArgument::NO_ARG};
     }

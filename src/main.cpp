@@ -110,7 +110,7 @@ void setup()
 
 	intentCurrent->onStartUp(IntentArgument::NO_ARG);
 
-	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 2048, NULL, 1, &intentFreqHandle, 0);
+	xTaskCreatePinnedToCore(taskIntentFreq, "intentFreq", 4096, NULL, 1, &intentFreqHandle, 0);
 	xTaskCreatePinnedToCore(taskStatusDspl, "statusDspl", 2048, NULL, 1, &statusDsplHandle, 0);
 }
 

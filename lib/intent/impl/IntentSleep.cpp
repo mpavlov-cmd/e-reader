@@ -17,7 +17,7 @@ void IntentSleep::onStartUp(IntentArgument arg) {
 }
 
 void IntentSleep::onFrequncy() {
-    Serial.println("Sleep intenet on frequency");
+    Serial.println("IntentSleep on frequency");
 }
 
 void IntentSleep::onExit()
