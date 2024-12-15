@@ -28,7 +28,7 @@ public:
     void onFrequncy() override;
     void onExit() override;
 
-    ActionResult onAction(uint16_t actionId) override;
+    ActionResult onAction(ActionArgument arg) override;
     uint8_t getId() override;
 
     ~IntentSleep()

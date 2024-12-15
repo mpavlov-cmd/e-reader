@@ -75,66 +75,55 @@ void IntentFileSelector::onExit()
     Serial.println("Intent FileSelector On Frequency Called");
 }
 
-ActionResult IntentFileSelector::onAction(uint16_t actionId)
+ActionResult IntentFileSelector::onAction(ActionArgument arg)
 {
-    Serial.printf("Inside of action: %i\n", actionId);
-
-    // TODO: Duplicate code see IntnetHome
-	// Extract hold bit for easy use
-	bool held = false;
-	uint8_t action = controlDirection(actionId, held);
-
-	// Up or down
-	if (action == BUTTON_ACTION_DOWN || action == BUTTON_ACTION_UP)
-	{
-		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
-		menu->moveActiveItem(direction);
-		widgetMenu->upgrade(*menu);
-
+    // Handle up or down
+	if (handleMenuNavigation(*menu, *widgetMenu, arg.actionBit)) {
 		return ActionResult::VOID;
 	}
 
-	if (action == B00001000)
+	// Anyting else
+	if (arg.actionBit =! B00001000)
 	{
-		Serial.println("--- Enter clicked ---");
-        MenuItem* activeItem = menu->getActiveItem();
-        if (activeItem == nullptr) {
-            return ActionResult::VOID;
-        }
+		return ActionResult::VOID;
+	}
 
-        const char* newFilePath = activeItem->getValue();
-        Serial.printf("Selected file: %s\n", newFilePath);
-
-        File selectedFile = fileManager.openFile(newFilePath, FILE_READ);
-        bool isDirectory = selectedFile.isDirectory();
-
-        // Make sure the value is copied, otherwise after file is closed pointer would break
-        // TODO: probaby rewrite using strcpy
-        String storedPath(selectedFile.path());
-        selectedFile.close();
-
-        if (!isDirectory) {
-            // TODO: Fire intend ased on the fie extention
-            return ActionResult::VOID;
-        }
-
-        const char* storedPacthCa = storedPath.c_str();
-
-        // TODO: Exit widget in case dir is called on root
-        if (currentPath == "/" && strcmp("/", storedPacthCa) == 0) {
-            return {ActionRetultType::CHANGE_INTENT, INTENT_ID_HOME, IntentArgument::NO_ARG};
-        }
-
-        // File is directory
-        delete menu;
-        delete widgetMenu;
-
-        prepareAndRnderDir(storedPacthCa);
-        
+    Serial.println("--- Enter clicked ---");
+    MenuItem* activeItem = menu->getActiveItem();
+    if (activeItem == nullptr) {
         return ActionResult::VOID;
     }
 
-    return {ActionRetultType::CHANGE_INTENT, INTENT_ID_HOME, IntentArgument::NO_ARG};
+    const char* newFilePath = activeItem->getValue();
+    Serial.printf("Selected file: %s\n", newFilePath);
+
+    File selectedFile = fileManager.openFile(newFilePath, FILE_READ);
+    bool isDirectory = selectedFile.isDirectory();
+
+    // Make sure the value is copied, otherwise after file is closed pointer would break
+    // TODO: probaby rewrite using strcpy
+    String storedPath(selectedFile.path());
+    selectedFile.close();
+
+    if (!isDirectory) {
+        // TODO: Fire intend ased on the fie extention
+        return ActionResult::VOID;
+    }
+
+    const char* storedPacthCa = storedPath.c_str();
+
+    // TODO: Exit widget in case dir is called on root
+    if (currentPath == "/" && strcmp("/", storedPacthCa) == 0) {
+        return {ActionRetultType::CHANGE_INTENT, INTENT_ID_HOME, IntentArgument::NO_ARG};
+    }
+
+    // File is directory
+    delete menu;
+    delete widgetMenu;
+
+    prepareAndRnderDir(storedPacthCa);
+    
+    return ActionResult::VOID;
 }
 
 uint8_t IntentFileSelector::getId()

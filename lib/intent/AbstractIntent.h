@@ -16,6 +16,11 @@ struct ActionResult {
     IntentArgument data;
 };
 
+struct ActionArgument {
+    uint8_t actionBit;
+    bool held;
+};
+
 struct AbstractIntent {
 
     public:
@@ -23,7 +28,7 @@ struct AbstractIntent {
         virtual void onFrequncy() = 0;
         virtual void onExit() = 0;
 
-        virtual ActionResult onAction(uint16_t actionId) = 0;
+        virtual ActionResult onAction(ActionArgument) = 0;
         virtual uint8_t getId() = 0;
 
         AbstractIntent();

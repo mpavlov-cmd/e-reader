@@ -54,54 +54,43 @@ void IntentHome::onExit()
 	Serial.println("Home Intent on Exit");
 }
 
-ActionResult IntentHome::onAction(uint16_t actionId)
+ActionResult IntentHome::onAction(ActionArgument arg)
 {
-	Serial.printf("Inside of action: %i\n", actionId);
-
-	// Extract hold bit for easy use
-	// TODO: Duplicate codel see IntentFileSelector
-	bool held = false;
-	uint8_t action = controlDirection(actionId, held);
-
-	// Up or down
-	if (action == BUTTON_ACTION_DOWN || action == BUTTON_ACTION_UP)
-	{
-		bool direction = action == BUTTON_ACTION_DOWN ? true : false;
-		menu->moveActiveItem(direction);
-		widgetMenu->upgrade(*menu);
-
+	// Handle up or down
+	if (handleMenuNavigation(*menu, *widgetMenu, arg.actionBit)) {
 		return ActionResult::VOID;
 	}
 
-	if (action == B00001000)
+	// Anyting else
+	if (arg.actionBit =! B00001000)
 	{
-		Serial.println("--- Enter clicked ---");
+		return ActionResult::VOID;
+	}
 
-		// Validate active item and menu id value
-		if (menu->getActiveItem() == nullptr) {
-			return ActionResult::VOID;
-		}
+	Serial.println("--- Home Intent Enter Clicked ---");
 
-		uint16_t menuItemId = menu->getActiveItem()->getId();
-		if (menuItemId > UINT8_MAX) {
-			return ActionResult::VOID;
-		}
+	// Validate active item and menu id value
+	if (menu->getActiveItem() == nullptr) {
+		return ActionResult::VOID;
+	}
 
-		// From main menu go to FS root
-		IntentArgument fileSelectorFsRoot("/");
+	uint16_t menuItemId = menu->getActiveItem()->getId();
+	if (menuItemId > UINT8_MAX) {
+		return ActionResult::VOID;
+	}
 
-		switch (menuItemId)
-		{
-		case INTENT_ID_SLEEP:
-			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_SLEEP, IntentArgument::NO_ARG};
-		case INTENT_ID_FILE_SELECTOR:
-			return {ActionRetultType::CHANGE_INTENT, INTENT_ID_FILE_SELECTOR, fileSelectorFsRoot};
-		default:
-			return ActionResult::VOID;
-		}	
-	};
+	// From main menu go to FS root
+	IntentArgument fileSelectorFsRoot("/");
 
-	return ActionResult::VOID;
+	switch (menuItemId)
+	{
+	case INTENT_ID_SLEEP:
+		return {ActionRetultType::CHANGE_INTENT, INTENT_ID_SLEEP, IntentArgument::NO_ARG};
+	case INTENT_ID_FILE_SELECTOR:
+		return {ActionRetultType::CHANGE_INTENT, INTENT_ID_FILE_SELECTOR, fileSelectorFsRoot};
+	default:
+		return ActionResult::VOID;
+	}	
 }
 
 uint8_t IntentHome::getId()

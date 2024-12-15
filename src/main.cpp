@@ -25,13 +25,16 @@
 
 #include <IntentIdentifier.h>
 #include <impl/IntentHome.h>
-#include <impl/IntentFileSelector.h>
 #include <impl/IntentSleep.h>
+#include <impl/IntentFileSelector.h>
+#include <impl/IntentBook.h>
+
 
 #include <PowerStatus.h>
 #include <ImageDrawer.h>
 #include <text/TextIndex.h>
 #include <SwithInputHandler.h>
+#include <ButtonActions.h>
 #include <widget/WidgetPower.h>
 
 #define SLEEP_TIMEOUT_MILLS 60 * 1000
@@ -122,10 +125,16 @@ void loop()
 		// Run action
 		xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
 
-		Serial.print("Action perfromed: ");
+		Serial.print("Loop -> action perfromed: ");
 		Serial.println(switchInput, BIN);
 
-		ActionResult result = intentCurrent->onAction(switchInput);
+		// Extract hold bit and create action arg
+		bool held = false;
+		uint8_t direction = controlDirection(switchInput, held);
+		ActionArgument arg{direction, held};
+
+		// Fire action
+		ActionResult result = intentCurrent->onAction(arg);
 
 		// Exit current intent and start next one
 		if (result.type == ActionRetultType::CHANGE_INTENT) {
@@ -208,6 +217,9 @@ void buildIntent(uint8_t intentId)
 		break;
 	case INTENT_ID_SLEEP:
 		intentCurrent = new IntentSleep(display, sleepControl, imageDrawer, fileManager);
+		break;
+	case INTENT_ID_BOOK:
+		intentCurrent = new IntentBook(display);
 		break;
 	default:
 		intentCurrent = new IntentHome(display, rtc, fileManager, imageDrawer);

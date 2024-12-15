@@ -24,7 +24,7 @@ void IntentSleep::onExit()
 {
 }
 
-ActionResult IntentSleep::onAction(uint16_t actionId)
+ActionResult IntentSleep::onAction(ActionArgument arg)
 {
     return ActionResult::VOID;
 }

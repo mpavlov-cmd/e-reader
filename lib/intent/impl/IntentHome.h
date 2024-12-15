@@ -13,6 +13,7 @@
 #include <model/menu/Menu.h>
 #include <ButtonActions.h>
 #include <IntentIdentifier.h>
+#include <util/MenuInputHandler.h>
 
 struct IntentHome : public AbstractDisplayIntent
 {
@@ -40,7 +41,7 @@ struct IntentHome : public AbstractDisplayIntent
         void onFrequncy() override;
         void onExit() override;
 
-        ActionResult onAction(uint16_t actionId) override;
+        ActionResult onAction(ActionArgument arg) override;
         uint8_t getId() override;
 
         ~IntentHome() {
