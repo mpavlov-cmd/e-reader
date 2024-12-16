@@ -3,9 +3,15 @@
 
 #include <AbstractDisplayIntent.h>
 #include <IntentIdentifier.h>
+#include <widget/WidgetText.h>
 
 struct IntentBook : public AbstractDisplayIntent
 {
+private:
+    DBox textBox{24, 48, 432, 704, 2, 0};
+
+    ModelText* modelText = nullptr;
+    WidgetText* widgetText = nullptr;
 
 public:
     // Constant declaration
@@ -22,6 +28,7 @@ public:
 
     ~IntentBook()
     {
+        delete widgetText;
     }
 };
 

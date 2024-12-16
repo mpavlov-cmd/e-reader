@@ -6,6 +6,7 @@
 #include <widget/WidgetImage.h>
 #include <SleepControl.h>
 #include <PinDefinitions.h>
+#include <model/DPosition.h>
 
 struct IntentSleep : public AbstractDisplayIntent
 {

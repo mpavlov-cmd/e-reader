@@ -8,7 +8,7 @@ void IntentSleep::onStartUp(IntentArgument arg) {
 
     widgetImage = new WidgetImage(display, imageDrawer, fileManager);
 
-    imgModel = {"/.system/img/sleep.bmp", CENTER_CEMNTER};
+    imgModel = {"/.system/img/sleep.bmp", CENTER_CENTER};
     widgetImage->upgrade(imgModel);
     
 	digitalWrite(PIN_LED, LOW);

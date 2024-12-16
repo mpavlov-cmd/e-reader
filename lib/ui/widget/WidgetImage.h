@@ -3,15 +3,12 @@
 
 #include "AbstractWidget.h"
 #include "ImageDrawer.h"
-
-enum Position {
-    CENTER_CEMNTER
-};
+#include "model/DPosition.h"
 
 struct ImageModel
 {
     const char* filePath;
-    Position position;
+    DPosition position;
 };
 
 class WidgetImage : public AbstractWidget<ImageModel>
@@ -38,7 +35,7 @@ private:
         // TODO: Handle case when file cannot be opened
         // TODO: Handle case when file is bigger that screen
         // TODO: Make sure width and height are increased so when %8 the remainder is 0
-        if (widgetData.position == CENTER_CEMNTER) {
+        if (widgetData.position == CENTER_CENTER) {
             startX = display.width() / 2 - bmpData.width / 2;
             startY = display.height() / 2 - bmpData.height / 2;
         }
