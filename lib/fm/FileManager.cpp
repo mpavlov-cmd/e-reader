@@ -224,7 +224,7 @@ const char *FileManager::getPreviousLevel(const char *path)
             // Allocate a new string for the previous level
             // When static variable allocation is used, the space will be reserverd in static mameory once and forever. 
             // Thus, no need to do a cleanup
-            thread_local static char previousLevel[256]; // Adjust size as needed for your environment
+            static char previousLevel[256]; // Adjust size as needed for your environment
             strncpy(previousLevel, path, i - 1);
             previousLevel[i - 1] = '\0';
 
