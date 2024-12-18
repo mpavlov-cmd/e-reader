@@ -7,6 +7,9 @@
 #include <GxEPD2_BW.h>
 
 struct TextIndexConf {
+
+    static const TextIndexConf DFT;
+
     const uint16_t textW;
     const uint16_t textH;
     const uint16_t pageLim;

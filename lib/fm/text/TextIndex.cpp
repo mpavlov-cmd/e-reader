@@ -1,5 +1,8 @@
 #include "TextIndex.h"
 
+
+const TextIndexConf TextIndexConf::DFT = {432, 704, 0, false};
+
 TextIndex::TextIndex(GxEPD2_GFX &gxDisplay, FileManager &fileManager) : display(gxDisplay), fm(fileManager)
 {
 }
