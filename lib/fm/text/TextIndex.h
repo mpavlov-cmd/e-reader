@@ -5,6 +5,7 @@
 #include <FileManager.h>
 #include <GxEPD2_GFX.h>
 #include <GxEPD2_BW.h>
+#include <path/PathUtils.h>
 
 struct TextIndexConf {
 
@@ -56,9 +57,9 @@ struct TextIndex {
          * Generates index of the text file by splitting it by pages and saving every page to the separate file in the folder
          * 
          * @param path full path to the file to index;
-         * @returns absolute address pointing to the folder where index is created.
+         * @returns absolute address pointing to the folder where index is created or emptyStrig in case of error
          */
-        const char* generateIdx(const char *path);
+        String generateIdx(const char *path);
 
         /**
          * Setting configuration for indexing.

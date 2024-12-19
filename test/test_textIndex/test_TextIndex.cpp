@@ -44,16 +44,21 @@ void testSmallFileIndexed_nonEmpty(void) {
     testSubject.configure({432, 704, 0, true});
 
     // When
-    const char* resultFilePath = testSubject.generateIdx("/.test/text_short.txt");
+    String filePath = testSubject.generateIdx("/.test/text_short.txt");
+    const char* filePathCharArr = filePath.c_str();
 
     // Then
     // Index dir created
-    TEST_ASSERT_EQUAL_STRING("/.test/._text_short.txt_83_idx", resultFilePath);
+    TEST_ASSERT_EQUAL_STRING("/.test/._text_short.txt_88_idx", filePathCharArr);
+    File fileTestTemp = fileManager.openFile(filePathCharArr, FILE_READ);
+    
+    TEST_ASSERT_TRUE(fileTestTemp.isDirectory());
 
     // There is one index fie
     Set<FileIndex> resultindex(8);
-    bool success = fileManager.indexDirectory(resultFilePath, DirIndexConf::FULL, resultindex);
+    bool success = fileManager.indexDirectory(fileTestTemp.path(), DirIndexConf::FULL, resultindex);
     TEST_ASSERT_TRUE(1 == resultindex.size());
+    fileTestTemp.close();
 
     // It has expecetd name
     FileIndex fileIndex = *resultindex.getItem(0);
@@ -65,7 +70,7 @@ void testSmallFileIndexed_nonEmpty(void) {
     fileManager.readFileToBuffer(fileIndex.getPath(), buffer, bufferSize);
 
     String fileData(buffer);  
-    TEST_ASSERT_TRUE(fileData.endsWith("sem."));
+    TEST_ASSERT_TRUE(fileData.endsWith("Max!"));
 }
 
 

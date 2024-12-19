@@ -1,20 +1,20 @@
 #include <unity.h>
 #include <Arduino.h>
 #include <SPI.h>
-#include <SD.h>
 #include <FS.h>
+#include <SD.h>
+#include <set/Set.h>
+
 #include <GxEPD2_GFX.h>
 #include <GxEPD2_BW.h>
+#include <GxEPD2_dispaly_tools.h>
 
-#include <FileManager.h>
-#include <PinDefinitions.h>
+#include <path/PathUtils.h>
 
-FileManager fileManager(SD, PIN_CS_SD);
 
 void setUp(void)
 {
-    // Serial.begin(115200);
-    fileManager.begin();
+    Serial.begin(115200);
 }
 
 void tearDown(void)
@@ -27,7 +27,7 @@ void testFindFileExtension_hasExt(void) {
     // Given 
     const char* rootPath = "test.txt";
     // When
-    const char* ext = fileManager.findFileExtension(rootPath);
+    const char* ext = getFileExtension(rootPath);
     // Then
     TEST_ASSERT_EQUAL_STRING("txt", ext);
 }
@@ -37,7 +37,7 @@ void testFindFileExtension_noExtNoDot(void) {
     // Given 
     const char* rootPath = "test";
     // When
-    const char* ext = fileManager.findFileExtension(rootPath);
+    const char* ext = getFileExtension(rootPath);
     // Then
     TEST_ASSERT_EQUAL_STRING("", ext);
 }
@@ -48,7 +48,7 @@ void testFindFileExtension_noExtWhenDot(void) {
     // Given 
     const char* rootPath = "test.";
     // When
-    const char* ext = fileManager.findFileExtension(rootPath);
+    const char* ext = getFileExtension(rootPath);
     // Then
     TEST_ASSERT_EQUAL_STRING("", ext);
 }
@@ -58,7 +58,7 @@ void testGetPreviousLevel_emptyString(void) {
     // Given
     const char* path = "";
     // When
-    const char* result = fileManager.getPreviousLevel(path);
+    const char* result = getParentDir(path);
     // Then
     TEST_ASSERT_EQUAL_STRING("/", result);
 }
@@ -68,7 +68,7 @@ void testGetPreviousLevel_slashSlash(void) {
     // Given
     const char* path = "/";
     // When
-    const char* result = fileManager.getPreviousLevel(path);
+    const char* result = getParentDir(path);
     // Then
     TEST_ASSERT_EQUAL_STRING("/", result);
 }
@@ -78,7 +78,7 @@ void testGetPreviousLevel_oneLevenRoot(void) {
     // Given
     const char* path = "/one";
     // When
-    const char* result = fileManager.getPreviousLevel(path);
+    const char* result = getParentDir(path);
     // Then
     TEST_ASSERT_EQUAL_STRING("/", result);
 }
@@ -88,7 +88,7 @@ void testGetPreviousLevel_twoLevelsOne(void) {
     // Given
     const char* path = "/one/two";
     // When
-    const char* result = fileManager.getPreviousLevel(path);
+    const char* result = getParentDir(path);
     // Then
     TEST_ASSERT_EQUAL_STRING("/one", result);
 }
@@ -98,7 +98,7 @@ void testGetPreviousLevel_twoLevelsSlashOne(void) {
     // Given
     const char* path = "/one/two/";
     // When
-    const char* result = fileManager.getPreviousLevel(path);
+    const char* result = getParentDir(path);
     // Then
     TEST_ASSERT_EQUAL_STRING("/one", result);
 }
@@ -108,7 +108,7 @@ void testGetPreviousLevel_filePassedParentDirProvided(void) {
     // Given
     const char* path = "/one/two/max.txt";
     // When
-    const char* result = fileManager.getPreviousLevel(path);
+    const char* result = getParentDir(path);
     // Then
     TEST_ASSERT_EQUAL_STRING("/one/two", result);
 }

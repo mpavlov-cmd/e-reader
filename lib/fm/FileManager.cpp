@@ -46,7 +46,7 @@ File FileManager::openFile(const char *path, const char *mode)
 bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<FileIndex>& result)
 {
     Serial.printf("Indexing directory: %s\n", path);
-    File root = fs.open(path);
+    File root = fs.open(path, FILE_READ);
 
     // TODO: Duplicate code
     if (!root)
@@ -79,7 +79,7 @@ bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<
         }
 
         // Finding extention
-        const char* fileExt = findFileExtension(file.name());
+        const char* fileExt = getFileExtension(file.name());
 
         // Filter by ext. See correct way to compare 2 strings (const char *)
         if (conf.filterByExt && strcmp(conf.extNeedle, fileExt) != 0)
@@ -98,37 +98,6 @@ bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<
 
     root.close();
     return true;
-}
-
-// TODO: Potentially move to file utils
-const char *FileManager::findFileExtension(const char *filename)
-{
-    const char *dot = "";
-
-    // Traverse the string to find the last dot '.'
-    for (int i = 0; filename[i] != '\0'; i++) {
-        if (filename[i] == '.') {
-            dot = &filename[i + 1];  // Point to the character after the dot
-        }
-    }
-
-    // Check if an extension was found
-    return dot;
-}
-
-// TODO: Rewrite to avoid static char allocation findFileExtension method 
-const char* FileManager::getParentDir(const char *path)
-{
-    const char *lastSlash = strrchr(path, '/'); // Find the last occurrence of '/'
-	if (lastSlash != nullptr)
-	{
-		size_t dirLength = lastSlash - path;			 // Calculate the length of the directory part
-		char *directory = (char *)malloc(dirLength + 1); // Allocate memory for the directory string
-		strncpy(directory, path, dirLength);			 // Copy the directory part
-		directory[dirLength] = '\0';					 // Null-terminate the string
-		return directory;
-	}
-	return "/";
 }
 
 bool FileManager::writeFile(const char *path, const char *message)
@@ -161,6 +130,7 @@ void FileManager::removeDirRecursive(const char *path)
     if (!root.isDirectory())
     {
         Serial.println("Not a directory");
+        root.close();
         return;
     }
 
@@ -187,53 +157,10 @@ void FileManager::removeDirRecursive(const char *path)
     }
 
     // Once all files and folders are deleted, delete the root directory itself
+    file.close();
     root.close();
     fs.rmdir(path);
     Serial.printf("Deleted root directory: %s\n", path);
-}
-
-// TODO: Rewrite to avoid static char allocation findFileExtension method 
-const char *FileManager::getPreviousLevel(const char *path)
-{
-    // Check if the input path is root "/"
-    if (strcmp(path, "/") == 0)
-    {
-        return "/";
-    }
-
-    // Determine the length of the path
-    size_t length = strlen(path);
-
-    // Remove trailing slash if present (but ensure root "/" is unchanged)
-    if (length > 1 && path[length - 1] == '/')
-    {
-        length--;
-    }
-
-    // Find the last slash in the adjusted path
-    for (size_t i = length; i > 0; --i)
-    {
-        if (path[i - 1] == '/')
-        {
-            // If the last slash is at the beginning, return root
-            if (i == 1)
-            {
-                return "/";
-            }
-
-            // Allocate a new string for the previous level
-            // When static variable allocation is used, the space will be reserverd in static mameory once and forever. 
-            // Thus, no need to do a cleanup
-            static char previousLevel[256]; // Adjust size as needed for your environment
-            strncpy(previousLevel, path, i - 1);
-            previousLevel[i - 1] = '\0';
-
-            return previousLevel;
-        }
-    }
-
-    // If no slash is found, return root (this shouldn't occur with valid input)
-    return "/";
 }
 
 bool FileManager::readFileToBuffer(const char *path, char *buffer, size_t bufferSize)
@@ -256,6 +183,39 @@ bool FileManager::readFileToBuffer(const char *path, char *buffer, size_t buffer
     file.close();
 
     return true;
+}
+
+const char *FileManager::checksum(const char *path, uint16_t bufferSize)
+{
+
+    File file = fs.open(path);
+    if (!file)
+    {
+        Serial.printf("Failed to open file: %s\n", path);
+        return nullptr;
+    }
+
+    if (file.isDirectory()) {
+        Serial.printf("Path is a directory, unable to calculate checksum: %s\n", path);
+        return nullptr;
+    }
+
+    Adler32 adler32;
+    char buffer[bufferSize];
+    size_t index = 0;
+
+    while(file.available()) {
+        buffer[index++] = file.read();
+        if (index == bufferSize) {
+            adler32.addFast(buffer, bufferSize);
+            index = 0;
+        }
+    }
+
+    uint16_t adlerInt = adler32.getAdler();
+    String hexString = String(adlerInt, HEX);
+
+    return hexString.c_str();
 }
 
 void FileManager::listDir(const char *dirname, uint8_t levels)

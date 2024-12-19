@@ -5,7 +5,7 @@ void IntentFileSelector::prepareAndRnderDir(const char *path)
     // Save current path 
     currentPath = path;
     
-    const char* levelUpPath = fileManager.getPreviousLevel(path);
+    const char* levelUpPath = getParentDir(path);
 
     // Init menu items
     Set<MenuItem> menuItems(MAX_FILES);
@@ -107,7 +107,7 @@ ActionResult IntentFileSelector::onAction(ActionArgument arg)
 
     // Get char array for the stored path 
     if (!isDirectory) {
-        const char* fileExt = fileManager.findFileExtension(storedPacthCa);
+        const char* fileExt = getFileExtension(storedPacthCa);
 
         // Choose new intent based on the extention
         if (strcmp("txt", fileExt) == 0) {

@@ -4,8 +4,10 @@
 #include <Arduino.h>
 #include <FS.h>
 #include <SD.h>
+#include <Adler32.h>
 #include <set/Set.h>
 #include <index/FileIndex.h>
+#include <path/PathUtils.h>
 
 struct DirIndexConf {
 
@@ -65,25 +67,6 @@ public:
     bool indexDirectory(const char *path, const DirIndexConf conf, Set<FileIndex>& result);
 
     /**
-     * Fild file extention
-     *
-     * @param filename pointer to the string where extention needs to be found
-     *
-     * @returns pointer to the same string but 1 char after last dot ext or nullptr
-     */
-    const char *findFileExtension(const char *filename);
-
-    /**
-     * Allows to find directory name out of File::path()
-     * Do not forget to free meemory when not needed uing free((void*)retval);
-     *
-     * @param path file path
-     *
-     * @returns path to the directory without ending slash or '/'
-     */
-    const char* getParentDir(const char *path);
-
-    /**
      * Writes contents to the newrly created file 
      * 
      * @param path path to the new file
@@ -112,22 +95,6 @@ public:
     void removeDirRecursive(const char *path);
 
     /**
-     * Utility method that would accept directry patch and return one level up directory
-     * Works without dynamic memory allocation
-     * Example: 
-     * 
-     * "/books" → "/"
-     * "/books/current" → "/books"
-     * "/books/current/" → "/books"
-     * "/" → "/"
-     * 
-     * @param directory path
-     * @return prent level directory or "/" in case FS root
-     * 
-     */
-    const char* getPreviousLevel(const char* path);
-
-    /**
      * Reads file to buffer of a given size. 
      * 
      * @param path absolute path to the file
@@ -137,6 +104,14 @@ public:
      * @returns true in case operation was succesful
      */
     bool readFileToBuffer(const char *path, char *buffer, size_t bufferSize);
+
+    /**
+    * Allows to get file hash using Adler32 algorithm with a givn buffer size
+    * 
+    * @param path absolute path to the file
+    * @param bufferSize size of the buffer to read file contents
+    */
+    const char* checksum(const char* path, uint16_t bufferSize);
 
 
     // TODO: Here as an example. Review what's needed

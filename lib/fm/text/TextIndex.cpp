@@ -7,15 +7,14 @@ TextIndex::TextIndex(GxEPD2_GFX &gxDisplay, FileManager &fileManager) : display(
 {
 }
 
-// TODO: Return const char* or nulptr rather that file
-const char* TextIndex::generateIdx(const char *path)
+String TextIndex::generateIdx(const char *path)
 {
     // Open file 
     Serial.printf("Opening file %s\n", path);
 	File file = fm.openFile(path, FILE_READ);
 	if (!file) {
 		Serial.printf("Unable to open file %s\n", path);
-        return nullptr;
+        return emptyString;
 	}
 
 	Serial.printf("File size: %i\n", file.size());
@@ -24,7 +23,7 @@ const char* TextIndex::generateIdx(const char *path)
 	lineIndex = 0;
 
     // Create temp dir name
-    const char* parentDir = fm.getParentDir(file.path());
+    const char* parentDir = getParentDir(file.path());
 	Serial.println("Dir Name:");
 	Serial.println(parentDir);
 
@@ -45,7 +44,7 @@ const char* TextIndex::generateIdx(const char *path)
 			fm.removeDirRecursive(idxDirPathCharArr);
 		} else { 
 			Serial.printf("Index for %s already exists, returning dir: %s\n", filename, idxDirPathCharArr);
-			return idxDirPath.c_str();
+			return idxDirPath;
 		}
 		
 	}
@@ -185,7 +184,7 @@ const char* TextIndex::generateIdx(const char *path)
     // Close original file
     file.close();
 
-    return idxDirPath.c_str();
+    return idxDirPath;
 }
 
 void TextIndex::configure(TextIndexConf conf)
