@@ -111,7 +111,14 @@ public:
     * @param path absolute path to the file
     * @param bufferSize size of the buffer to read file contents
     */
-    const char* checksum(const char* path, uint16_t bufferSize);
+    String checksum(const char* path, uint16_t bufferSize);
+
+    /**
+     * Deletes file under specified path
+     * 
+     * @param path absolute path to the file to delete
+     */
+    void deleteFile(const char *path);
 
 
     // TODO: Here as an example. Review what's needed
@@ -119,7 +126,6 @@ public:
     void readFile(const char *path);
     void appendFile(const char *path, const char *message);
     void renameFile(const char *path1, const char *path2);
-    void deleteFile(const char *path);
 
 private:
     /**

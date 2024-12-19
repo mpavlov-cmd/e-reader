@@ -20,6 +20,12 @@
 FileManager fileManager(SD, PIN_CS_SD);
 TextIndex testSubject(display, fileManager);
 
+const char* PATH_TEST_DIR   = "/.test";
+const char* PATH_SHORT_TEXT = "/.test/text_short.txt";
+const char* PATH_LONG_TEXT  = "/.test/text_long.txt";
+
+String text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.";
+
 void setUp(void)
 {   
     Serial.begin(115200);
@@ -27,14 +33,23 @@ void setUp(void)
     // Initalize display as it is used by text index
     initDisplay();
 
-    // Files are required on SD card so there is a test data
-    // 1. /.test/text_short.txt
-    // 2. /.test/text_long.txt
     fileManager.begin();
+    fileManager.createDir(PATH_TEST_DIR);
+
+    // Prepare files
+    fileManager.writeFile(PATH_SHORT_TEXT, text.c_str());
+
+    String longText;
+    for (uint8_t i = 0; i < UINT8_MAX; i++) {
+        longText.concat(text);
+    }
+
+    fileManager.writeFile(PATH_LONG_TEXT, longText.c_str());
 }
 
 void tearDown(void)
 {
+    fileManager.removeDirRecursive(PATH_TEST_DIR);
     // clean stuff up here
 }
 
@@ -44,12 +59,12 @@ void testSmallFileIndexed_nonEmpty(void) {
     testSubject.configure({432, 704, 0, true});
 
     // When
-    String filePath = testSubject.generateIdx("/.test/text_short.txt");
+    String filePath = testSubject.generateIdx(PATH_SHORT_TEXT);
     const char* filePathCharArr = filePath.c_str();
 
     // Then
     // Index dir created
-    TEST_ASSERT_EQUAL_STRING("/.test/._text_short.txt_88_idx", filePathCharArr);
+    TEST_ASSERT_EQUAL_STRING("/.test/._text_short.txt_91_idx", filePathCharArr);
     File fileTestTemp = fileManager.openFile(filePathCharArr, FILE_READ);
     
     TEST_ASSERT_TRUE(fileTestTemp.isDirectory());
@@ -70,7 +85,7 @@ void testSmallFileIndexed_nonEmpty(void) {
     fileManager.readFileToBuffer(fileIndex.getPath(), buffer, bufferSize);
 
     String fileData(buffer);  
-    TEST_ASSERT_TRUE(fileData.endsWith("Max!"));
+    TEST_ASSERT_TRUE(fileData.endsWith("dolor."));
 }
 
 

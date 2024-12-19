@@ -141,8 +141,7 @@ void FileManager::removeDirRecursive(const char *path)
         {
             // Recursively delete contents of this directory
             removeDirRecursive(file.path());
-            // Remove the directory itself after its contents are deleted
-            fs.rmdir(file.path());
+
             Serial.printf("Deleted directory: %s\n", file.path());
         }
         else
@@ -185,19 +184,19 @@ bool FileManager::readFileToBuffer(const char *path, char *buffer, size_t buffer
     return true;
 }
 
-const char *FileManager::checksum(const char *path, uint16_t bufferSize)
+String FileManager::checksum(const char *path, uint16_t bufferSize)
 {
 
     File file = fs.open(path);
     if (!file)
     {
         Serial.printf("Failed to open file: %s\n", path);
-        return nullptr;
+        return emptyString;
     }
 
     if (file.isDirectory()) {
         Serial.printf("Path is a directory, unable to calculate checksum: %s\n", path);
-        return nullptr;
+        return emptyString;
     }
 
     Adler32 adler32;
@@ -215,7 +214,20 @@ const char *FileManager::checksum(const char *path, uint16_t bufferSize)
     uint16_t adlerInt = adler32.getAdler();
     String hexString = String(adlerInt, HEX);
 
-    return hexString.c_str();
+    return hexString;
+}
+
+void FileManager::deleteFile(const char *path)
+{
+    Serial.printf("Deleting file: %s\n", path);
+    if (fs.remove(path))
+    {
+        Serial.println("File deleted");
+    }
+    else
+    {
+        Serial.println("Delete failed");
+    }
 }
 
 void FileManager::listDir(const char *dirname, uint8_t levels)
@@ -335,19 +347,6 @@ void FileManager::renameFile(const char *path1, const char *path2)
     else
     {
         Serial.println("Rename failed");
-    }
-}
-
-void FileManager::deleteFile(const char *path)
-{
-    Serial.printf("Deleting file: %s\n", path);
-    if (fs.remove(path))
-    {
-        Serial.println("File deleted");
-    }
-    else
-    {
-        Serial.println("Delete failed");
     }
 }
 
