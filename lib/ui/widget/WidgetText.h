@@ -29,16 +29,15 @@ public:
     // Add text size and font to the model
     virtual void beforePrint(ModelText &widgetData) override {
         display.getTextBounds(TEXT_SAMPLE, 0, 0, &x, &y, &width, &height);
+        display.setCursor(box.x + box.padding, box.y + height + box.padding);
     };
 
-    // TODO: Take position into considearation
+    // TODO: Take position into considearation, 
+    // TODO: Print text line by line, because diplay moves all to the satrt of display after \n
     virtual void print(ModelText &widgetData) override {
 
-        const char* text = widgetData.text.c_str();
         // Serial.printf("Text to print inside of widget: %s\n", text);
-
-        display.setCursor(box.x + box.padding, box.y + height +  box.padding);
-        display.print(text);
+        display.print(widgetData.text.c_str());
     };
 
     // Restore default text size and font

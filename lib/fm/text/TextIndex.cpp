@@ -7,6 +7,7 @@ TextIndex::TextIndex(GxEPD2_GFX &gxDisplay, FileManager &fileManager) : display(
 {
 }
 
+// TODO: Return const char* or nulptr rather that file
 File TextIndex::generateIdx(const char *path)
 {
     // Open file 
@@ -68,7 +69,7 @@ File TextIndex::generateIdx(const char *path)
 				// If the word doesn't fit, print the current line and start a new one
 				currentPage.concat(currentLine);
 				currentPage.concat('\n');
-				currentLine = "";		  // Reset current line
+				currentLine.clear();	  // Reset current line
 				// currentLineWidth = 0;  // Reset width counter
 				skipLeadingSpaces = true; // Skip leading spaces for the next line
 				wrappedLine = true;		  // Mark that the line was wrapped
@@ -110,7 +111,7 @@ File TextIndex::generateIdx(const char *path)
 					currentPage.concat('\n');
 					lineIndex++;
 
-					currentLine = "";		  // Reset the line
+					currentLine.clear();	  // Reset the line
 					// currentLineWidth = 0;  // Reset width counter
 					skipLeadingSpaces = true; // Skip leading spaces for the next line
 				} else {
@@ -125,7 +126,7 @@ File TextIndex::generateIdx(const char *path)
 			}
 
 			// Clear the current word
-			currentWord = "";
+			currentWord.clear();
 		}
 		
 		else if (c != ' ' && isPrintable(c))
@@ -144,7 +145,7 @@ File TextIndex::generateIdx(const char *path)
             }
 			
 			// Drop current page, so next is processed
-			currentPage = "";
+			currentPage.clear();
 			pageIndex++;
 			lineIndex = currentLine.isEmpty() ? 0 : 1;
 		}
@@ -156,13 +157,27 @@ File TextIndex::generateIdx(const char *path)
 		}
 	}
 
-    // TODO: Check if there are cases when current line is not emplty, and so generate additional page
+	if (!currentWord.isEmpty()) {
+		currentLine.concat(currentWord);
+		currentWord.clear();
+	}
 
-    // if (!currentLine.isEmpty())
-	// {
-	// 	currentPage.concat(currentLine);
-    //  // ...
-	// }
+    if (!currentLine.isEmpty())
+	{
+		currentLine.trim();
+		currentPage.concat(currentLine);
+		currentLine.clear();
+	}
+
+	if (!currentPage.isEmpty()) {
+		String pageFileName = idxDirPath + "/._" + String(pageIndex) + ".page.txt";
+		bool pageFileWritten = fm.writeFile(pageFileName.c_str(), currentPage.c_str());
+		if (!pageFileWritten) {
+			Serial.println("Error creating page file");
+		}
+
+		currentPage.clear();
+	}
 
     // Close original file
     file.close();

@@ -41,7 +41,7 @@ void tearDown(void)
 void testSmallFileIndexed_nonEmpty(void) {
 
     // Given 
-    testSubject.configure(TextIndexConf::DFT);
+    testSubject.configure({432, 704, 0, true});
 
     // When
     File resultFile = testSubject.generateIdx("/.test/text_short.txt");
@@ -53,12 +53,20 @@ void testSmallFileIndexed_nonEmpty(void) {
     // There is one index fie
     Set<FileIndex> resultindex(8);
     bool success = fileManager.indexDirectory(resultFile.path(), DirIndexConf::FULL, resultindex);
-
+    resultFile.close();
     TEST_ASSERT_TRUE(1 == resultindex.size());
 
-    // TODO: File contents matches original file contnets
+    // It has expecetd name
+    FileIndex fileIndex = *resultindex.getItem(0);
+    TEST_ASSERT_EQUAL_STRING("._0.page.txt", fileIndex.getName());
+    
+    // It contains data and ends with the same word origial text ends
+    size_t bufferSize = 1024;
+    char buffer[bufferSize];
+    fileManager.readFileToBuffer(fileIndex.getPath(), buffer, bufferSize);
 
-    resultFile.close();
+    String fileData(buffer);  
+    TEST_ASSERT_TRUE(fileData.endsWith("sem."));
 }
 
 

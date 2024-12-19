@@ -49,9 +49,6 @@ void IntentBook::onStartUp(IntentArgument arg)
 	Serial.println("Page:");
 	Serial.println(firstPageString);
 
-    // TODO: Load text with actua file
-    String text = "My text sample";
-
     ModelText modelTextObj = {textBox, CENTER_CENTER, firstPageString};
     modelText = &modelTextObj;
 

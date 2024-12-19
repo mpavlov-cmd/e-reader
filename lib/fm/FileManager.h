@@ -127,6 +127,17 @@ public:
      */
     const char* getPreviousLevel(const char* path);
 
+    /**
+     * Reads file to buffer of a given size. 
+     * 
+     * @param path absolute path to the file
+     * @param buffer pointer to the char array to store file contents
+     * @param bufferSize size of the buffer, as buffer is a pointer
+     * 
+     * @returns true in case operation was succesful
+     */
+    bool readFileToBuffer(const char *path, char *buffer, size_t bufferSize);
+
 
     // TODO: Here as an example. Review what's needed
     void listDir(const char *dirname, uint8_t levels);

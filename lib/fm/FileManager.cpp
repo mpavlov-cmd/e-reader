@@ -236,6 +236,28 @@ const char *FileManager::getPreviousLevel(const char *path)
     return "/";
 }
 
+bool FileManager::readFileToBuffer(const char *path, char *buffer, size_t bufferSize)
+{
+    File file = fs.open(path);
+    if (!file)
+    {
+        Serial.println("Failed to open file for reading");
+        return false;
+    }
+
+    size_t index = 0;
+
+    while (file.available() && index < bufferSize - 1) // Leave space for null terminator
+    {
+        buffer[index++] = file.read();
+    }
+    buffer[index] = '\0'; // Null terminate the string
+
+    file.close();
+
+    return true;
+}
+
 void FileManager::listDir(const char *dirname, uint8_t levels)
 {
     Serial.printf("Listing directory: %s\n", dirname);
@@ -312,7 +334,7 @@ void FileManager::readFile(const char *path)
         return;
     }
 
-    Serial.print("Read from file: ");
+    Serial.println("Read from file: ");
     while (file.available())
     {
         Serial.write(file.read());

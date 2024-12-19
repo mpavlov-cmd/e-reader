@@ -17,15 +17,13 @@ void IntentFileSelector::prepareAndRnderDir(const char *path)
 
     // Build dir index
     dirIndex.clear();
-    bool indexed = fileManager.indexDirectory(path, DirIndexConf::FULL, dirIndex);
+    bool indexed = fileManager.indexDirectory(path, {true, false, false, nullptr}, dirIndex);
 
     for (uint16_t i = 0; i < dirIndex.size(); i++) {
 
         FileIndex* fi = dirIndex.getItem(i);
         bool isActive = i==0;
         uint16_t id = i + 1;
-
-        Serial.printf("File: %s isDirectory: %i\n", fi->getName(), fi->getIsDirectry());
 
         MenuItem* menuItem = nullptr;
         if (fi->getIsDirectry()) {
