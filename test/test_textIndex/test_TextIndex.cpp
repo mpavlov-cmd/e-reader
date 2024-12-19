@@ -44,16 +44,15 @@ void testSmallFileIndexed_nonEmpty(void) {
     testSubject.configure({432, 704, 0, true});
 
     // When
-    File resultFile = testSubject.generateIdx("/.test/text_short.txt");
+    const char* resultFilePath = testSubject.generateIdx("/.test/text_short.txt");
 
     // Then
     // Index dir created
-    TEST_ASSERT_EQUAL_STRING("._text_short.txt_83_idx", resultFile.name());
+    TEST_ASSERT_EQUAL_STRING("/.test/._text_short.txt_83_idx", resultFilePath);
 
     // There is one index fie
     Set<FileIndex> resultindex(8);
-    bool success = fileManager.indexDirectory(resultFile.path(), DirIndexConf::FULL, resultindex);
-    resultFile.close();
+    bool success = fileManager.indexDirectory(resultFilePath, DirIndexConf::FULL, resultindex);
     TEST_ASSERT_TRUE(1 == resultindex.size());
 
     // It has expecetd name

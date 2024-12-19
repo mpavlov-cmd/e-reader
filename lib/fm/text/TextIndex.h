@@ -56,10 +56,9 @@ struct TextIndex {
          * Generates index of the text file by splitting it by pages and saving every page to the separate file in the folder
          * 
          * @param path full path to the file to index;
-         * @returns file pointing to the folder where index is created. File can be checked using if (!file) in the calling code
+         * @returns absolute address pointing to the folder where index is created.
          */
-        File generateIdx(const char *path);
-
+        const char* generateIdx(const char *path);
 
         /**
          * Setting configuration for indexing.

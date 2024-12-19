@@ -20,12 +20,11 @@ void IntentBook::onStartUp(IntentArgument arg)
     // Configure and run text index
     // TODO: Finish here, create indexing flag and check it on update. If indexing is done open book
     textIndex.configure(conf);
-    File textIndexDir = textIndex.generateIdx(arg.strValue);
-    Serial.printf("-- Index Generated! Dir: %s --\n", textIndexDir.name());
-    
+    const char* textIndexDirPath = textIndex.generateIdx(arg.strValue);
+    Serial.printf("-- Index Generated! Dir: %s --\n", textIndexDirPath);
+
     Set<FileIndex> fileIndex(1024);
-    fileManager.indexDirectory(textIndexDir.path(), DirIndexConf::FULL, fileIndex);
-    textIndexDir.close();
+    fileManager.indexDirectory(textIndexDirPath, DirIndexConf::FULL, fileIndex);
 
     if (fileIndex.size() == 0) {
         Serial.println("-- Fix Me --");
