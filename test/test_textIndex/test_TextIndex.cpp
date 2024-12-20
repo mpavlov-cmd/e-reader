@@ -17,14 +17,16 @@
 #include <FileManager.h>
 #include <text/TextIndex.h>
 
-FileManager fileManager(SD, PIN_CS_SD);
-TextIndex testSubject(display, fileManager);
+TextIndexConf testIndexConf = {432, 704, 0, true};
 
 const char* PATH_TEST_DIR   = "/.test";
 const char* PATH_SHORT_TEXT = "/.test/text_short.txt";
 const char* PATH_LONG_TEXT  = "/.test/text_long.txt";
 
 String text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.";
+
+FileManager fileManager(SD, PIN_CS_SD);
+TextIndex testSubject(display, fileManager);
 
 void setUp(void)
 {   
@@ -44,19 +46,26 @@ void setUp(void)
         longText.concat(text);
     }
 
+    longText.concat(" Long!");
     fileManager.writeFile(PATH_LONG_TEXT, longText.c_str());
+
+    Serial.println("---------------- SETUP DONE ----------------");
+    Serial.println();
 }
 
 void tearDown(void)
 {
-    fileManager.removeDirRecursive(PATH_TEST_DIR);
+    Serial.println();
+    Serial.println("---------------- TEST DONE ----------------");
+
     // clean stuff up here
+    fileManager.removeDirRecursive(PATH_TEST_DIR);
 }
 
 void testSmallFileIndexed_nonEmpty(void) {
 
     // Given 
-    testSubject.configure({432, 704, 0, true});
+    testSubject.configure(testIndexConf);
 
     // When
     String filePath = testSubject.generateIdx(PATH_SHORT_TEXT);
@@ -64,7 +73,7 @@ void testSmallFileIndexed_nonEmpty(void) {
 
     // Then
     // Index dir created
-    TEST_ASSERT_EQUAL_STRING("/.test/._text_short.txt_91_idx", filePathCharArr);
+    TEST_ASSERT_EQUAL_STRING("/.test/._text_short.txt_21a3_idx", filePathCharArr);
     File fileTestTemp = fileManager.openFile(filePathCharArr, FILE_READ);
     
     TEST_ASSERT_TRUE(fileTestTemp.isDirectory());
@@ -72,7 +81,7 @@ void testSmallFileIndexed_nonEmpty(void) {
     // There is one index fie
     Set<FileIndex> resultindex(8);
     bool success = fileManager.indexDirectory(fileTestTemp.path(), DirIndexConf::FULL, resultindex);
-    TEST_ASSERT_TRUE(1 == resultindex.size());
+    TEST_ASSERT_EQUAL_INT(1, resultindex.size());
     fileTestTemp.close();
 
     // It has expecetd name
@@ -88,6 +97,36 @@ void testSmallFileIndexed_nonEmpty(void) {
     TEST_ASSERT_TRUE(fileData.endsWith("dolor."));
 }
 
+void testMultiPageFileIndexed_hasFullData(void) {
+
+    // Given 
+    testSubject.configure(testIndexConf);
+
+    // When
+    String filePath = testSubject.generateIdx(PATH_LONG_TEXT);
+    const char* filePathCharArr = filePath.c_str();
+
+    TEST_ASSERT_TRUE(fileManager.exists(filePathCharArr));
+    TEST_ASSERT_EQUAL_STRING("/.test/._text_long.txt_841f_idx", filePathCharArr);
+
+    // There are multiple index fies
+    Set<FileIndex> resultindex(32);
+    bool success = fileManager.indexDirectory(filePathCharArr, DirIndexConf::FULL, resultindex);
+    uint16_t indexSize = resultindex.size();
+    TEST_ASSERT_EQUAL_INT(17, indexSize);
+
+    FileIndex lastFileIndex = *resultindex.getItem(indexSize - 1);
+     
+    // It contains data and ends with the same word origial text ends
+    size_t bufferSize = 1024;
+    char buffer[bufferSize];
+    fileManager.readFileToBuffer(lastFileIndex.getPath(), buffer, bufferSize);
+
+    // Verify last index ends the same as the original text
+    String fileData(buffer);  
+    TEST_ASSERT_TRUE(fileData.endsWith("Long!"));
+}
+
 
 // Actual test runner
 void setup()
@@ -96,6 +135,7 @@ void setup()
     UNITY_BEGIN();
 
     RUN_TEST(testSmallFileIndexed_nonEmpty);
+    RUN_TEST(testMultiPageFileIndexed_hasFullData);
 
     UNITY_END(); // stop unit testing
 }

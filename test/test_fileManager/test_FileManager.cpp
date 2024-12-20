@@ -117,7 +117,7 @@ void testSmallFileSmallChecksum_OK(void)
     // Given
     unsigned long checksumStart = millis();
 
-    // When
+    // Whenfunction
     String checksum = fileManager.checksum(PATH_SHORT_TEXT, 1);
     unsigned long timeTaken = millis() - checksumStart;
 

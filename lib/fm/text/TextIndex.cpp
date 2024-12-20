@@ -17,8 +17,9 @@ String TextIndex::generateIdx(const char *path)
         return emptyString;
 	}
 
-	Serial.printf("File size: %i\n", file.size());
-	
+	Serial.printf("File size: %i\n", file.size());	
+	String checksum = fm.checksum(path, 5120);
+
 	pageIndex = 0;
 	lineIndex = 0;
 
@@ -28,14 +29,12 @@ String TextIndex::generateIdx(const char *path)
 	Serial.println(parentDir);
 
 	String filename = String(file.name());
-	String fileSizeStr = String(file.size());
 	filename.toLowerCase();
 
-	String idxDirName = "._" + filename + "_" + fileSizeStr + "_idx";	
+	String idxDirName = "._" + filename + "_" + checksum + "_idx";	
 	String idxDirPath = String(parentDir) + "/" + idxDirName;
 
-    String idxDirPathCopy = idxDirPath;
-	const char* idxDirPathCharArr = idxDirPathCopy.c_str();
+	const char* idxDirPathCharArr = idxDirPath.c_str();
 
     // If direectory exists, consider index complete and return
 	bool dirExists = fm.exists(idxDirPathCharArr);
