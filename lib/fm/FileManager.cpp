@@ -65,7 +65,7 @@ bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<
     File file = root.openNextFile();
     while (file)
     {
-        Serial.printf("Opening file: %s\n", file.name());
+        // Serial.printf("Opening file: %s\n", file.name());
         if (!conf.showDir && file.isDirectory())
         {
             closeAndOpenNext(root, file);
@@ -88,8 +88,7 @@ bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<
             continue;
         }
 
-        Serial.printf("Found file ext: %s\n", fileExt);
-
+        // Serial.printf("Found file ext: %s\n", fileExt);
         FileIndex *fileIndex = new FileIndex(file.name(), file.path(), fileExt, file.size(), file.isDirectory());
         result.addItem(fileIndex);
 

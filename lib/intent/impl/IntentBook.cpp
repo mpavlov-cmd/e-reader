@@ -13,15 +13,20 @@ void IntentBook::onStartUp(IntentArgument arg)
     TextIndexConf conf{
         (uint16_t) (textBox.width - textBox.padding),
         (uint16_t) (textBox.height - textBox.padding), 
-        50,
-        true
+        0,
+        false
     };
+    textIndex.configure(conf);
 
     // Configure and run text index
-    // TODO: Finish here, create indexing flag and check it on update. If indexing is done open book
-    textIndex.configure(conf);
     String textIndexDirPath = textIndex.generateIdx(arg.strValue);
-    Serial.printf("-- Index Generated! Dir: %s --\n", textIndexDirPath);
+    Serial.printf("-- Index Generated! Dir: %s --\n", textIndexDirPath.c_str());
+
+    // TODO: 
+    // 0. Servie responsible for cache management shoud belong to fm lib and will be caled DirectoryCacheManager (getOrCreate / store)
+    // 1. create a cache file if not exists "textIndexDirPath/cache/.cache.json"
+    // 2. cache file should contain last opened file index, last opened filename, date last opened, total pages
+    // 3. if cache file exists, read it and open last page
 
     Set<FileIndex> fileIndex(1024);
     fileManager.indexDirectory(textIndexDirPath.c_str(), DirIndexConf::FULL, fileIndex);
