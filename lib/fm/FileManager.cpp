@@ -187,6 +187,13 @@ bool FileManager::readFileToBuffer(const char *path, char *buffer, size_t buffer
 String FileManager::checksum(const char *path, uint16_t bufferSize)
 {
 
+    if (bufferSize == 0 || bufferSize > UINT16_MAX) {
+        Serial.printf(
+            "Invalid buffer size of %i. Please choose value between 1 and %i\n", bufferSize, UINT16_MAX);
+
+        return emptyString;
+    }
+
     File file = fs.open(path);
     if (!file)
     {
@@ -196,23 +203,33 @@ String FileManager::checksum(const char *path, uint16_t bufferSize)
 
     if (file.isDirectory()) {
         Serial.printf("Path is a directory, unable to calculate checksum: %s\n", path);
+        file.close();
         return emptyString;
     }
 
+    size_t fileSize = file.size();
+    size_t choosenBufferSzie = bufferSize < fileSize ? bufferSize : fileSize;
+    Serial.printf("Checksum: choosen buffer size: %i\n", choosenBufferSzie);
+
     Adler32 adler32;
-    char buffer[bufferSize];
+    char buffer[choosenBufferSzie];
     size_t index = 0;
 
     while(file.available()) {
         buffer[index++] = file.read();
-        if (index == bufferSize) {
-            adler32.addFast(buffer, bufferSize);
+        if (index == choosenBufferSzie || !file.available()) {
+            // Serial.printf("Checksum: addFast will be executed buffer: %s\n", buffer);
+            adler32.addFast(buffer, choosenBufferSzie);
             index = 0;
+
+            memset(buffer, '\0', choosenBufferSzie);            
         }
     }
 
     uint16_t adlerInt = adler32.getAdler();
     String hexString = String(adlerInt, HEX);
+
+    file.close();
 
     return hexString;
 }
