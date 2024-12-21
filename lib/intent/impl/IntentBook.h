@@ -5,6 +5,7 @@
 #include <IntentIdentifier.h>
 #include <widget/WidgetText.h>
 #include <text/TextIndex.h>
+#include <cache/DirectoryCache.h>
 
 struct IntentBook : public AbstractDisplayIntent
 {
