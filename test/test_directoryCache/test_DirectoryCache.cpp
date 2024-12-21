@@ -31,15 +31,6 @@ void setUp(void)
     SPI.begin();
     fileManager.begin();
 
-    testModel.curFileIdx = 1;
-    testModel.totalFiles = 100;
-    testModel.lastOpened = 1734792636;
-    strlcpy(
-        testModel.curFileNme,        // <- destination
-        "test.txt",                  // <- source
-        sizeof(testModel.curFileNme) // <- destination's capacity
-    );
-
     // Prepare json for read test
     fileManager.createDir(PATH_TEST_DIR);
 
