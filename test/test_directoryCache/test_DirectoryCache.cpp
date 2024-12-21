@@ -43,11 +43,6 @@ void setUp(void)
     // Prepare json for read test
     fileManager.createDir(PATH_TEST_DIR);
 
-    // fileManager.writeFile(
-    //     "/.test/.dir_cache/cache.json",
-    //      "{\"curFileIdx\":1,\"totalFiles\":100,\"lastOpened\":1734792636,\"curFileNme\":\"test.txt\"}"
-    // );
-
     Serial.println("---------------- SETUP DONE ----------------");
     Serial.println();
 }
