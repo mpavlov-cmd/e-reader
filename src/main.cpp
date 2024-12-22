@@ -191,7 +191,7 @@ void buildIntent(uint8_t intentId)
 		intentCurrent = new IntentSleep(display, sleepControl, imageDrawer, fileManager);
 		break;
 	case INTENT_ID_BOOK:
-		intentCurrent = new IntentBook(display, textIndex, fileManager);
+		intentCurrent = new IntentBook(display, semaphoreHandle, textIndex, fileManager);
 		break;
 	default:
 		intentCurrent = new IntentHome(display, rtc, fileManager, imageDrawer);
