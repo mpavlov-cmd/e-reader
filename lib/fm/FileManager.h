@@ -12,6 +12,7 @@
 struct DirIndexConf {
 
     static const DirIndexConf FULL;
+    static const DirIndexConf NO_DIR;
 
     const boolean showDir;
     const boolean showHidden;

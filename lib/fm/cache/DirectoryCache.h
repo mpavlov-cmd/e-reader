@@ -11,8 +11,8 @@ struct DirectoryCache
 private:
     FileManager &fileManager;
 
-    const char* chacheDirName  = ".dir_cache";
-    const char* chacheFileName = "cache.json";
+    static constexpr const char* chacheDirName = ".dir_cache";
+    static constexpr const char* chacheFileName = "cache.json";
 
 public:
     struct Model

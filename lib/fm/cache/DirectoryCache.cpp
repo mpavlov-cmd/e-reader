@@ -13,6 +13,8 @@ bool DirectoryCache::read(const char *path, Model &model)
         return false;
     }
 
+    Serial.printf("Reading cache for path: %s\n", path);
+
     if (!fileManager.exists(fullPathC))
     {
         return false;
@@ -53,6 +55,14 @@ bool DirectoryCache::write(const char *path, Model &model)
         return false;
     }
 
+    Serial.printf("Writing cache for path: %s\n", path);
+
+    // //TODO: Only if debug
+    // Serial.printf("curFileIdx: %i\n",  model.curFileIdx);
+    // Serial.printf("totalFiles: %i\n",  model.totalFiles);
+    // Serial.printf("lastOpened: %lu\n", model.lastOpened);
+    // Serial.printf("curFileNme: %s\n",  model.curFileNme);
+
     const char* cacheDirPathC = getParentDir(fullPathC);
     if (!fileManager.exists(cacheDirPathC))
     {
@@ -84,7 +94,7 @@ bool DirectoryCache::write(const char *path, Model &model)
 
 const char *DirectoryCache::getCacheFilePath(const char *path, String &cacheFilePath)
 {
-     if (path == nullptr)
+    if (path == nullptr)
     {
         return nullptr;
     }
