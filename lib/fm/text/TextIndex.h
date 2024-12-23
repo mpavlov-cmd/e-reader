@@ -6,6 +6,7 @@
 #include <GxEPD2_GFX.h>
 #include <GxEPD2_BW.h>
 #include <path/PathUtils.h>
+#include <checksum/AdlerStatefulChecksum.h>
 
 struct TextIndexConf {
 

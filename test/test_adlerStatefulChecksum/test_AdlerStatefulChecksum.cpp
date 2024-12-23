@@ -15,8 +15,10 @@
 
 #include <index/FileIndex.h>
 #include <FileManager.h>
+#include <checksum/AdlerStatefulChecksum.h>
 
 FileManager fileManager(SD, PIN_CS_SD);
+AdlerStatefulChecksum testSubject(fileManager);
 
 const char *PATH_TEST_DIR   = "/.test";
 const char *PATH_SHORT_TEXT = "/.test/text_short.txt";
@@ -72,7 +74,7 @@ void testSmallFileChecksum_OK(void)
     unsigned long checksumStart = millis();
 
     // When
-    String checksum = fileManager.checksum(PATH_SHORT_TEXT, 256);
+    String checksum = testSubject.checksum(PATH_SHORT_TEXT, 256);
     unsigned long timeTaken = millis() - checksumStart;
 
     // Then
@@ -95,7 +97,7 @@ void testLargeFileChecksum_OK(void)
     unsigned long checksumStart = millis();
 
     // When
-    String checksum = fileManager.checksum(PATH_LONG_TEXT, 5120);
+    String checksum = testSubject.checksum(PATH_LONG_TEXT, 5120);
     unsigned long timeTaken = millis() - checksumStart;
 
     // Then
@@ -118,7 +120,7 @@ void testSmallFileSmallChecksum_OK(void)
     unsigned long checksumStart = millis();
 
     // Whenfunction
-    String checksum = fileManager.checksum(PATH_SHORT_TEXT, 1);
+    String checksum = testSubject.checksum(PATH_SHORT_TEXT, 1);
     unsigned long timeTaken = millis() - checksumStart;
 
     // Then
@@ -139,9 +141,9 @@ void testSameFileDifferentBuffers_sameChecksum(void)
     Serial.printf("Preparing checksum for file: %s, size: %i\n", PATH_SHORT_TEXT, smallFileSize);
 
     // When
-    String checksum1 = fileManager.checksum(PATH_SHORT_TEXT, 1);
-    String checksum2 = fileManager.checksum(PATH_SHORT_TEXT, 32);
-    String checksum3 = fileManager.checksum(PATH_SHORT_TEXT, UINT16_MAX);
+    String checksum1 = testSubject.checksum(PATH_SHORT_TEXT, 1);
+    String checksum2 = testSubject.checksum(PATH_SHORT_TEXT, 32);
+    String checksum3 = testSubject.checksum(PATH_SHORT_TEXT, UINT16_MAX);
 
     // Then
     TEST_ASSERT_EQUAL_STRING("21a3", checksum1.c_str());
@@ -154,7 +156,7 @@ void testZeroBuferSizeOrExceded_emptyString(void)
 {
 
     // When
-    String cs1 = fileManager.checksum(PATH_SHORT_TEXT, 0);
+    String cs1 = testSubject.checksum(PATH_SHORT_TEXT, 0);
     // String cs2 = fileManager.checksum(PATH_SHORT_TEXT, UINT16_MAX + 1); // This wil be visible as 0 inside
 
     // Then
@@ -169,7 +171,7 @@ void testNonExistentFile_emptyString(void)
     unsigned long checksumStart = millis();
 
     // When
-    String checksum = fileManager.checksum(PATH_NOT_EXIST, 256);
+    String checksum = testSubject.checksum(PATH_NOT_EXIST, 256);
     unsigned long timeTaken = millis() - checksumStart;
 
     // Then
@@ -183,7 +185,7 @@ void testSourceIsDirectory_emptyString(void)
     unsigned long checksumStart = millis();
 
     // When
-    String checksum = fileManager.checksum(PATH_TEST_DIR, 256);
+    String checksum = testSubject.checksum(PATH_TEST_DIR, 256);
     unsigned long timeTaken = millis() - checksumStart;
 
     // Then

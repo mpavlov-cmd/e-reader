@@ -18,7 +18,10 @@ String TextIndex::generateIdx(const char *path)
 	}
 
 	Serial.printf("File size: %i\n", file.size());	
-	String checksum = fm.checksum(path, 5120);
+
+	// TODO: since checksum is statteful, inject a factory instead of instantiating it here
+	AdlerStatefulChecksum checksumImpl(fm);
+	String checksum = checksumImpl.checksum(path, 5120);
 
 	pageIndex = 0;
 	lineIndex = 0;

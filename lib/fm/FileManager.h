@@ -107,14 +107,6 @@ public:
     bool readFileToBuffer(const char *path, char *buffer, size_t bufferSize);
 
     /**
-    * Allows to get file hash using Adler32 algorithm with a givn buffer size
-    * 
-    * @param path absolute path to the file
-    * @param bufferSize size of the buffer to read file contents
-    */
-    String checksum(const char* path, uint16_t bufferSize);
-
-    /**
      * Deletes file under specified path
      * 
      * @param path absolute path to the file to delete
