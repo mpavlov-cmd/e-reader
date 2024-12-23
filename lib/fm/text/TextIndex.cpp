@@ -186,12 +186,17 @@ String TextIndex::generateIdx(const char *path)
     return idxDirPath;
 }
 
+uint16_t TextIndex::curretnPageInex()
+{
+    return pageIndex;
+}
+
 void TextIndex::configure(TextIndexConf conf)
 {
-    textAreaWidth = conf.textW;
+    textAreaWidth  = conf.textW;
     textAreaHeight = conf.textH;
-    pageLimit = conf.pageLim;
-	forceIndex = conf.forceIndex;
+    pageLimit      = conf.pageLim;
+	forceIndex     = conf.forceIndex;
 
     // Get Space width
 	display.getTextBounds("s w", 0, 0, &x, &y, &width, &height);

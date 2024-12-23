@@ -44,7 +44,7 @@ struct TextIndex {
         bool forceIndex        = false;
 
         uint16_t lineIndex = 0;
-        uint16_t pageIndex = 0;
+        volatile u_int8_t pageIndex = 0;
 
         // max abount of pages to produce
         uint16_t pageLimit = 0;
@@ -60,6 +60,13 @@ struct TextIndex {
          * @returns absolute address pointing to the folder where index is created or emptyStrig in case of error
          */
         String generateIdx(const char *path);
+
+        /**
+         * Returns current page index, and used to indicate progress during async indexing
+         * 
+         * @returns current page index
+         */
+        uint16_t curretnPageInex();
 
         /**
          * Setting configuration for indexing.

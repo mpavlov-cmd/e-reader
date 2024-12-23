@@ -84,6 +84,9 @@ void setup()
 	Serial.println("-------- BOOT SUCCESS --------");
 	Serial.printf("Boot count: %i\n", ++bootCount);
 
+	// Init and configure wdt with timeot seconds and panic flag
+	esp_task_wdt_init(60, false);
+
 	// Configure wake-up source
 	sleepControl.configureExt1WakeUp();
 

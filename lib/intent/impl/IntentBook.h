@@ -8,20 +8,28 @@
 #include <cache/DirectoryCache.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/event_groups.h>
+#include <esp_task_wdt.h>
 
 struct IntentBook : public AbstractDisplayIntent
 {
 private:
+
+    static constexpr const uint16_t PAGE_BUFFER_SIZE = 5120;
+
     SemaphoreHandle_t& displaySemaphoreHandle;
     TextIndex& textIndex;
     FileManager& fileManager;
 
+    char bookPath[512];
+    char bookPage[PAGE_BUFFER_SIZE];
     DBox textBox{24, 48, 432, 704, 2, 0};
 
     ModelText* modelText = nullptr;
     WidgetText* widgetText = nullptr;
 
     EventGroupHandle_t bookEventGroup = NULL;
+    TaskHandle_t bookLoadingHandle = NULL;
+    TaskHandle_t bookDisplayHandle = NULL;
 
     void bookLoadingTask();
     void bookDiaplayTask();
