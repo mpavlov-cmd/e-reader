@@ -15,10 +15,10 @@
 
 #include <index/FileIndex.h>
 #include <FileManager.h>
-#include <checksum/AdlerStatefulChecksum.h>
+#include <checksum/AdlerChecksum.h>
 
 FileManager fileManager(SD, PIN_CS_SD);
-AdlerStatefulChecksum testSubject(fileManager);
+AdlerChecksum testSubject(fileManager);
 
 const char *PATH_TEST_DIR   = "/.test";
 const char *PATH_SHORT_TEXT = "/.test/text_short.txt";
@@ -97,7 +97,8 @@ void testLargeFileChecksum_OK(void)
     unsigned long checksumStart = millis();
 
     // When
-    String checksum = testSubject.checksum(PATH_LONG_TEXT, 5120);
+    size_t bytesRead = 0; 
+    String checksum = testSubject.checksum(PATH_LONG_TEXT, 5120, &bytesRead);
     unsigned long timeTaken = millis() - checksumStart;
 
     // Then
@@ -105,6 +106,9 @@ void testLargeFileChecksum_OK(void)
 
     Serial.printf("Checksum for file: %s, size: %i bytes, checksum: %s, took : %lu mills \n",
                   PATH_SHORT_TEXT, largeFileSize, checksum.c_str(), timeTaken);
+
+    // Verify state is correct when checksum calculated 
+    TEST_ASSERT_EQUAL(largeFileSize, bytesRead);
 }
 
 void testSmallFileSmallChecksum_OK(void)

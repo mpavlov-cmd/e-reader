@@ -17,7 +17,7 @@ void IntentFileSelector::prepareAndRnderDir(const char *path)
 
     // Build dir index
     dirIndex.clear();
-    bool indexed = fileManager.indexDirectory(path, {true, false, false, nullptr}, dirIndex);
+    bool indexed = fileManager.indexDirectory(path, {0, true, false, false, nullptr}, dirIndex);
 
     for (uint16_t i = 0; i < dirIndex.size(); i++) {
 

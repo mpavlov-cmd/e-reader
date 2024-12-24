@@ -1,7 +1,7 @@
 #include "TextIndex.h"
 
 
-const TextIndexConf TextIndexConf::DFT = {432, 704, 0, false};
+const TextIndex::Conf TextIndex::Conf::DFT = {432, 704, 0, false};
 
 TextIndex::TextIndex(GxEPD2_GFX &gxDisplay, FileManager &fileManager) : display(gxDisplay), fm(fileManager)
 {
@@ -19,8 +19,7 @@ String TextIndex::generateIdx(const char *path)
 
 	Serial.printf("File size: %i\n", file.size());	
 
-	// TODO: since checksum is statteful, inject a factory instead of instantiating it here
-	AdlerStatefulChecksum checksumImpl(fm);
+	AdlerChecksum checksumImpl(fm);
 	String checksum = checksumImpl.checksum(path, 5120);
 
 	pageIndex = 0;
@@ -194,7 +193,7 @@ uint16_t TextIndex::curretnPageInex()
     return pageIndex;
 }
 
-void TextIndex::configure(TextIndexConf conf)
+void TextIndex::configure(TextIndex::Conf conf)
 {
     textAreaWidth  = conf.textW;
     textAreaHeight = conf.textH;

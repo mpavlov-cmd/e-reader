@@ -12,8 +12,9 @@
 struct DirIndexConf {
 
     static const DirIndexConf FULL;
-    static const DirIndexConf NO_DIR;
+    static const DirIndexConf FIRST_FILE;
 
+    const uint16_t limit;
     const boolean showDir;
     const boolean showHidden;
     const boolean filterByExt;
@@ -89,11 +90,13 @@ public:
     */
     void removeDir(const char *path);
 
-     /**
-     * Removes directory and all its contents under specified path, 
+    /**
+     * Removes directory and all its contents under specified path,
+     *
      * @param path
-    */
-    void removeDirRecursive(const char *path);
+     * @param removedFiles optional pointer to the variable that will store number of removed files
+     */
+    void removeDirRecursive(const char *path, uint16_t *removedFiles = nullptr);
 
     /**
      * Reads file to buffer of a given size. 

@@ -1,5 +1,5 @@
-#ifndef ADLERSTATEFULCHECKSUM_C
-#define ADLERSTATEFULCHECKSUM_C
+#ifndef ADLERCHECKSUM_C
+#define ADLERCHECKSUM_C
 
 #include <Arduino.h>
 #include <checksum/FileChecksum.h>
@@ -7,14 +7,13 @@
 #include <FileManager.h>
 #include <Adler32.h>
 
-class AdlerStatefulChecksum : public FileChecksum, StateAware<uint32_t>
+class AdlerChecksum : public FileChecksum
 {
 private:
     FileManager &fileManager;
-    uint32_t state = 0;
 
 public:
-    AdlerStatefulChecksum(FileManager &fileManager) : fileManager(fileManager) {}
+    AdlerChecksum(FileManager &fileManager) : fileManager(fileManager) {}
 
     /**
      *
@@ -22,12 +21,17 @@ public:
      *
      * @param path absolute path to the file
      * @param bufferSize size of the buffer to read file contents
+     * @param state optonal pointer to the state variable, if provided it will be updated with the current state hile reading the file
+     * 
+     * @returns checksum of the file as a hex string
      */
-    String checksum(const char *path, uint16_t bufferSize) override
+    String checksum(const char *path, uint16_t bufferSize, size_t* state = nullptr) override
     {
         // Drop state value
-        state = 0;
-
+        if (state != nullptr) {
+            *state = 0;
+        }
+      
         if (bufferSize == 0 || bufferSize > UINT16_MAX)
         {
             Serial.printf(
@@ -69,14 +73,17 @@ public:
 
                 memset(buffer, '\0', choosenBufferSzie);
 
-                // Take care about state
-                if (!file.available())
+                if (state != nullptr)
                 {
-                    state = file.size();
-                }
-                else
-                {
-                    state += choosenBufferSzie;
+                    // Take care about state
+                    if (!file.available())
+                    {
+                        *state = file.size();
+                    }
+                    else
+                    {
+                        *state += choosenBufferSzie;
+                    }
                 }
             }
         }
@@ -87,11 +94,6 @@ public:
         file.close();
 
         return hexString;
-    }
-
-    uint32_t getState() override
-    {
-        return state;
     }
 };
 

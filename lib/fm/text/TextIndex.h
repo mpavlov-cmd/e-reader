@@ -6,17 +6,7 @@
 #include <GxEPD2_GFX.h>
 #include <GxEPD2_BW.h>
 #include <path/PathUtils.h>
-#include <checksum/AdlerStatefulChecksum.h>
-
-struct TextIndexConf {
-
-    static const TextIndexConf DFT;
-
-    const uint16_t textW;
-    const uint16_t textH;
-    const uint16_t pageLim;
-    const bool forceIndex;
-};
+#include <checksum/AdlerChecksum.h>
 
 struct TextIndex {
 
@@ -52,6 +42,25 @@ struct TextIndex {
         uint16_t linesPerPage = 0;
 
     public:
+
+        enum Status {
+            STATUS_IDLE,
+            STATUS_CHECKSUM,
+            STATUS_CLEANUP,
+            STATUS_INDEXING,
+            STATUS_DONE
+        };
+
+        struct Conf
+        {
+            static const TextIndex::Conf DFT;
+
+            const uint16_t textW;
+            const uint16_t textH;
+            const uint16_t pageLim;
+            const bool forceIndex;
+        };
+
         TextIndex(GxEPD2_GFX& gxDisplay, FileManager& fileManager);
 
         /**
@@ -75,7 +84,7 @@ struct TextIndex {
          * 
          * @param conf self explenatory
         */
-        void configure(TextIndexConf conf);
+        void configure(TextIndex::Conf conf);
 };
 
 

@@ -1,7 +1,7 @@
 #include "FileManager.h"
 
-const DirIndexConf DirIndexConf::FULL   = {true, true, false, nullptr};
-const DirIndexConf DirIndexConf::NO_DIR = {false, true, false, nullptr};
+const DirIndexConf DirIndexConf::FULL       = {0, true, true, false, nullptr};
+const DirIndexConf DirIndexConf::FIRST_FILE = {1, false, true, false, nullptr};
 
 FileManager::FileManager(fs::FS &fs, const uint8_t csPin) : fs(fs), csPin(csPin)
 {
@@ -93,6 +93,13 @@ bool FileManager::indexDirectory(const char *path, const DirIndexConf conf, Set<
         FileIndex *fileIndex = new FileIndex(file.name(), file.path(), fileExt, file.size(), file.isDirectory());
         result.addItem(fileIndex);
 
+        // Limiting results, in case limit is set to 0 it will be ignored
+        if (conf.limit != 0 && result.size() >= conf.limit)
+        {
+            file.close();
+            break;
+        }
+
         closeAndOpenNext(root, file);
     }
 
@@ -116,7 +123,7 @@ bool FileManager::writeFile(const char *path, const char *message)
     return result;
 }
 
-void FileManager::removeDirRecursive(const char *path)
+void FileManager::removeDirRecursive(const char *path, uint16_t *removedFiles)
 {
     File root = fs.open(path);
 
@@ -149,6 +156,12 @@ void FileManager::removeDirRecursive(const char *path)
             // It's a file, delete it
             fs.remove(file.path());
             Serial.printf("Deleted file: %s\n", file.path());
+
+            // Increent counter in case it was provided
+            if (removedFiles != nullptr)
+            {
+                (*removedFiles)++;
+            }
         }
         // Move to the next file or directory in the folder
         file.close();
@@ -159,6 +172,13 @@ void FileManager::removeDirRecursive(const char *path)
     file.close();
     root.close();
     fs.rmdir(path);
+
+    // Increent counter in case it was provided
+    if (removedFiles != nullptr)
+    {
+        (*removedFiles)++;
+    }
+
     Serial.printf("Deleted root directory: %s\n", path);
 }
 

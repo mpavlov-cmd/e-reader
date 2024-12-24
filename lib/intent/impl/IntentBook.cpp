@@ -8,7 +8,7 @@ void IntentBook::bookLoadingTask()
     xEventGroupSetBits(bookEventGroup, BIT0);
  
       // Index Book
-    TextIndexConf conf{(uint16_t)(textBox.width - textBox.padding), (uint16_t)(textBox.height - textBox.padding), 50, true};
+    TextIndex::Conf conf{(uint16_t)(textBox.width - textBox.padding), (uint16_t)(textBox.height - textBox.padding), 50, true};
     textIndex.configure(conf);
 
     // Configure and run text index
@@ -28,7 +28,7 @@ void IntentBook::bookLoadingTask()
     if (!hasDirCache)
     {
         Set<FileIndex> fileIndex(1024);
-        fileManager.indexDirectory(textIndexDirPathC, DirIndexConf::NO_DIR, fileIndex);
+        fileManager.indexDirectory(textIndexDirPathC, DirIndexConf::FIRST_FILE, fileIndex);
 
         if (fileIndex.size() == 0)
         {
@@ -162,82 +162,6 @@ void IntentBook::onStartUp(IntentArgument arg)
         xTaskCreate(bookLoadingEntry, "bookLoading", 1024 * 10, this, 1, &bookLoadingHandle);
         xTaskCreate(bookDisplayEntry, "bookDisplay", 1024 *  5, this, 5, &bookDisplayHandle);
     }
-
-    // Index Book
-    // TextIndexConf conf{
-    //     (uint16_t)(textBox.width - textBox.padding),
-    //     (uint16_t)(textBox.height - textBox.padding),
-    //     0,
-    //     false};
-    // textIndex.configure(conf);
-
-    // // Configure and run text index
-    // String textIndexDirPath = textIndex.generateIdx(arg.strValue);
-    // const char *textIndexDirPathC = textIndexDirPath.c_str();
-    // Serial.printf("-- Index Generated! Dir: %s --\n", textIndexDirPathC);
-
-    // // Check if directory index exists
-    // // TODO: figure out why in case passed as argument: fails
-    // DirectoryCache directoryCahe(fileManager);
-
-    // DirectoryCache::Model dirCacheModel;
-    // bool hasDirCache = directoryCahe.read(textIndexDirPathC, dirCacheModel);
-
-    // if (!hasDirCache)
-    // {
-    //     Set<FileIndex> fileIndex(1024);
-    //     fileManager.indexDirectory(textIndexDirPathC, DirIndexConf::NO_DIR, fileIndex);
-
-    //     if (fileIndex.size() == 0)
-    //     {
-    //         Serial.println("Coud not index directory TODO: Handle this case");
-    //         return;
-    //     }
-
-    //     FileIndex *firstPage = fileIndex.getItem(0);
-    //     Serial.printf("First page file name: %s\n", firstPage->getName());
-
-    //     dirCacheModel.curFileIdx = 0;
-    //     dirCacheModel.totalFiles = fileIndex.size();
-    //     dirCacheModel.lastOpened = millis();
-
-    //     strlcpy(
-    //         dirCacheModel.curFileNme,        // <- destination
-    //         firstPage->getName(),            // <- source
-    //         sizeof(dirCacheModel.curFileNme) // <- destination's capacity
-    //     );
-
-    //     bool writeResult = directoryCahe.write(textIndexDirPathC, dirCacheModel);
-    //     if (!writeResult)
-    //     {
-    //         Serial.println("Failed to write directory cache");
-    //         return;
-    //     }
-    // }
-
-    // String pagePath = textIndexDirPath + "/" + dirCacheModel.curFileNme;
-    // const char *pagePacthC = pagePath.c_str();
-
-    // File firstPageFile = fileManager.openFile(pagePacthC, FILE_READ);
-    // String firstPageString;
-    // while (firstPageFile.available())
-    // {
-    //     char tc = firstPageFile.read();
-    //     firstPageString.concat(tc);
-    // }
-
-    // firstPageFile.close();
-
-    // Serial.println("Page:");
-    // Serial.println(firstPageString);
-
-    // ModelText modelTextObj = {textBox, CENTER_CENTER, firstPageString};
-    // modelText = &modelTextObj;
-
-    // // Serial.pintf does not work with Srings, it will work as text.c_str()
-    // // Serial.printf("--- Model text inside of statup: %s ---- \n", modelTextObj.text.c_str());
-    // widgetText = new WidgetText(display);
-    // widgetText->upgrade(*modelText);
 }
 
 void IntentBook::onFrequncy()

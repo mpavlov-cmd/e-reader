@@ -17,7 +17,7 @@
 #include <FileManager.h>
 #include <text/TextIndex.h>
 
-TextIndexConf testIndexConf = {432, 704, 0, true};
+TextIndex::Conf indexConf = {432, 704, 0, true};
 
 const char* PATH_TEST_DIR   = "/.test";
 const char* PATH_SHORT_TEXT = "/.test/text_short.txt";
@@ -65,7 +65,7 @@ void tearDown(void)
 void testSmallFileIndexed_nonEmpty(void) {
 
     // Given 
-    testSubject.configure(testIndexConf);
+    testSubject.configure(indexConf);
 
     // When
     String filePath = testSubject.generateIdx(PATH_SHORT_TEXT);
@@ -100,7 +100,7 @@ void testSmallFileIndexed_nonEmpty(void) {
 void testMultiPageFileIndexed_hasFullData(void) {
 
     // Given 
-    testSubject.configure(testIndexConf);
+    testSubject.configure(indexConf);
 
     // When
     String filePath = testSubject.generateIdx(PATH_LONG_TEXT);
