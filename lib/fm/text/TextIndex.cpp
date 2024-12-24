@@ -7,8 +7,16 @@ TextIndex::TextIndex(GxEPD2_GFX &gxDisplay, FileManager &fileManager) : display(
 {
 }
 
-String TextIndex::generateIdx(const char *path)
+String TextIndex::index(const char *path)
 {
+	// Drop values to zero
+	pageIndex = 0;
+	lineIndex = 0;
+
+	// Set status
+	currentStatus = STATUS_CHECKSUM;
+	currentStatusVaue = 0;
+
     // Open file 
     Serial.printf("Opening file %s\n", path);
 	File file = fm.openFile(path, FILE_READ);
@@ -20,10 +28,7 @@ String TextIndex::generateIdx(const char *path)
 	Serial.printf("File size: %i\n", file.size());	
 
 	AdlerChecksum checksumImpl(fm);
-	String checksum = checksumImpl.checksum(path, 5120);
-
-	pageIndex = 0;
-	lineIndex = 0;
+	String checksum = checksumImpl.checksum(path, 5120, &currentStatusVaue);
 
     // Create temp dir name
     const char* parentDir = getParentDir(file.path());
@@ -42,7 +47,10 @@ String TextIndex::generateIdx(const char *path)
 	bool dirExists = fm.exists(idxDirPathCharArr);
 	if (dirExists) {
 		if (forceIndex) {
-			fm.removeDirRecursive(idxDirPathCharArr);
+			// Set status
+			currentStatus = STATUS_CLEANUP;
+			currentStatusVaue = 0;
+			fm.removeDirRecursive(idxDirPathCharArr, reinterpret_cast<uint16_t*>(&currentStatusVaue));
 		} else { 
 			Serial.printf("Index for %s already exists, returning dir: %s\n", filename, idxDirPathCharArr);
 			return idxDirPath;
@@ -52,6 +60,15 @@ String TextIndex::generateIdx(const char *path)
 
 	fm.createDir(idxDirPathCharArr);
 	Serial.printf("Idx directory path: %s\n", idxDirPathCharArr);
+
+	// Set status
+	currentStatus = STATUS_INDEXING;
+	currentStatusVaue = 0;
+
+	// Reserve values for strings
+	currentPage.reserve(5120);
+	currentLine.reserve(512);
+	currentWord.reserve(128);
 
     // ---------------- Start indexing ----------------
     while (file.available())
@@ -73,10 +90,10 @@ String TextIndex::generateIdx(const char *path)
 				currentPage.concat(currentLine);
 				currentPage.concat('\n');
 				currentLine.clear();	  // Reset current line
-				// currentLineWidth = 0;  // Reset width counter
+				
 				skipLeadingSpaces = true; // Skip leading spaces for the next line
-				wrappedLine = true;		  // Mark that the line was wrapped
-				spaceAfterWrap = true;
+				wrappedLine       = true; // Mark that the line was wrapped
+				spaceAfterWrap    = true;
 
 				lineIndex++;
 			}
@@ -85,11 +102,9 @@ String TextIndex::generateIdx(const char *path)
 			if (!skipLeadingSpaces || currentWord.length() > 0)
 			{
 				currentLine += currentWord;
-				// currentLineWidth += width;
 
 				if (wrappedLine && spaceAfterWrap) {
 					currentLine += ' ';
-					// currentLineWidth += spaceWidth;
 					spaceAfterWrap = false;
 				}
 			}
@@ -101,7 +116,6 @@ String TextIndex::generateIdx(const char *path)
 				if (!skipLeadingSpaces && (currentLine.length() > 0 && currentLine.charAt(currentLine.length() - 1) != ' '))
 				{
 					currentLine += ' ';
-					// currentLineWidth += spaceWidth;
 				}
 			}
 
@@ -115,7 +129,6 @@ String TextIndex::generateIdx(const char *path)
 					lineIndex++;
 
 					currentLine.clear();	  // Reset the line
-					// currentLineWidth = 0;  // Reset width counter
 					skipLeadingSpaces = true; // Skip leading spaces for the next line
 				} else {
 					// Add space instead of '\n' when line was wrapped
@@ -185,19 +198,40 @@ String TextIndex::generateIdx(const char *path)
     // Close original file
     file.close();
 
+	// Set status and clear status bits
+	currentStatus = STATUS_IDLE;
+	currentStatusVaue = 0;
+	pageIndex = 0;
+
     return idxDirPath;
 }
 
-uint16_t TextIndex::curretnPageInex()
+TextIndex::StatusValue TextIndex::status() const
 {
-    return pageIndex;
+	size_t returnValue;
+	switch (currentStatus) 
+	{
+	case TextIndex::STATUS_IDLE:
+	case TextIndex::STATUS_CHECKSUM:
+	case TextIndex::STATUS_CLEANUP:
+		returnValue = currentStatusVaue;
+		break;
+	case TextIndex::STATUS_INDEXING:
+		returnValue = pageIndex;
+		break;
+	default:
+		returnValue = 0;
+		break;
+	}
+
+    return {currentStatus, returnValue};
 }
 
-void TextIndex::configure(TextIndex::Conf conf)
+void TextIndex::configure(const TextIndex::Conf& conf)
 {
-    textAreaWidth  = conf.textW;
-    textAreaHeight = conf.textH;
-    pageLimit      = conf.pageLim;
+    textAreaWidth  = conf.textWidth;
+    textAreaHeight = conf.textHeight;
+    pageLimit      = conf.pageLimit;
 	forceIndex     = conf.forceIndex;
 
     // Get Space width

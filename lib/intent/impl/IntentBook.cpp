@@ -8,12 +8,12 @@ void IntentBook::bookLoadingTask()
     xEventGroupSetBits(bookEventGroup, BIT0);
  
       // Index Book
-    TextIndex::Conf conf{(uint16_t)(textBox.width - textBox.padding), (uint16_t)(textBox.height - textBox.padding), 50, true};
+    TextIndex::Conf conf{(uint16_t)(textBox.width - textBox.padding), (uint16_t)(textBox.height - textBox.padding), 50, false};
     textIndex.configure(conf);
 
     // Configure and run text index
     xEventGroupSetBits(bookEventGroup, BIT1);
-    String textIndexDirPath = textIndex.generateIdx(bookPath);
+    String textIndexDirPath = textIndex.index(bookPath);
     const char *textIndexDirPathC = textIndexDirPath.c_str();
     Serial.printf("-- Index Generated! Dir: %s --\n", textIndexDirPathC);
     xEventGroupSetBits(bookEventGroup, BIT2);
@@ -68,6 +68,7 @@ void IntentBook::bookLoadingTask()
 
     xEventGroupSetBits(bookEventGroup, BIT3);
 
+    // TODO: Bug here, move vTaskDelete to the function wrapper
     vTaskDelete(NULL);
 }
 
@@ -116,9 +117,32 @@ void IntentBook::bookDiaplayTask()
                 continue;
             }
 
-            String pagesIndexed = String(textIndex.curretnPageInex());
-            Serial.printf("Pages indexed: %s\n", pagesIndexed.c_str());
-            modelTextObj.text = "Indexing book... " + pagesIndexed;
+            // Create widget output
+            TextIndex::StatusValue indexStatus = textIndex.status();
+            String statusValue = String(indexStatus.value);
+            String statusText;
+
+            switch (indexStatus.status)
+            {
+            case TextIndex::STATUS_CHECKSUM:
+                statusText = "Calculatig checksum:";
+                break;
+            
+            case TextIndex::STATUS_CLEANUP:
+                statusText = "Cleaning-up files:";
+                break;
+            
+            case TextIndex::STATUS_INDEXING:
+                statusText = "Indexing Pages:";
+                break;
+
+            default:
+                statusText = "Loading Book...";
+                break;
+            }
+
+            Serial.printf("%s %s\n",statusText.c_str(), statusValue.c_str());
+            modelTextObj.text = statusText + " " + statusValue;
 
             xSemaphoreTake(displaySemaphoreHandle, portMAX_DELAY);
             widgetText->upgrade(modelTextObj);

@@ -68,7 +68,7 @@ void testSmallFileIndexed_nonEmpty(void) {
     testSubject.configure(indexConf);
 
     // When
-    String filePath = testSubject.generateIdx(PATH_SHORT_TEXT);
+    String filePath = testSubject.index(PATH_SHORT_TEXT);
     const char* filePathCharArr = filePath.c_str();
 
     // Then
@@ -103,7 +103,7 @@ void testMultiPageFileIndexed_hasFullData(void) {
     testSubject.configure(indexConf);
 
     // When
-    String filePath = testSubject.generateIdx(PATH_LONG_TEXT);
+    String filePath = testSubject.index(PATH_LONG_TEXT);
     const char* filePathCharArr = filePath.c_str();
 
     TEST_ASSERT_TRUE(fileManager.exists(filePathCharArr));

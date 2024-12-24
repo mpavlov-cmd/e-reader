@@ -1,6 +1,7 @@
 #include "FileManager.h"
 
 const DirIndexConf DirIndexConf::FULL       = {0, true, true, false, nullptr};
+const DirIndexConf DirIndexConf::NO_HIDDEN  = {0, true, false, false, nullptr};
 const DirIndexConf DirIndexConf::FIRST_FILE = {1, false, true, false, nullptr};
 
 FileManager::FileManager(fs::FS &fs, const uint8_t csPin) : fs(fs), csPin(csPin)
