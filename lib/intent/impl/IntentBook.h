@@ -3,12 +3,12 @@
 
 #include <AbstractDisplayIntent.h>
 #include <IntentIdentifier.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
 #include <widget/WidgetText.h>
 #include <text/TextIndex.h>
 #include <cache/DirectoryCache.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/event_groups.h>
-#include <esp_task_wdt.h>
+#include <ButtonActions.h>
 
 struct IntentBook : public AbstractDisplayIntent
 {
@@ -21,9 +21,10 @@ private:
     FileManager& fileManager;
 
     char bookPath[512];
+    char bookIndexPath[1024];
     char bookPage[PAGE_BUFFER_SIZE];
-    DBox textBox{24, 48, 432, 704, 2, 0};
 
+    DBox textBox{24, 48, 432, 704, 2, 0};
     ModelText* modelText = nullptr;
     WidgetText* widgetText = nullptr;
 

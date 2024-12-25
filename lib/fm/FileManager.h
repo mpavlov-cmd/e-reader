@@ -13,7 +13,7 @@ struct DirIndexConf {
 
     static const DirIndexConf FULL;
     static const DirIndexConf NO_HIDDEN;
-    static const DirIndexConf FIRST_FILE;
+    static const DirIndexConf NO_DIR;
 
     const uint16_t limit;
     const boolean showDir;

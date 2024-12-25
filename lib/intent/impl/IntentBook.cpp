@@ -8,14 +8,17 @@ void IntentBook::bookLoadingTask()
     xEventGroupSetBits(bookEventGroup, BIT0);
  
       // Index Book
-    TextIndex::Conf conf{(uint16_t)(textBox.width - textBox.padding), (uint16_t)(textBox.height - textBox.padding), 50, false};
+    TextIndex::Conf conf{(uint16_t)(textBox.width - textBox.padding), (uint16_t)(textBox.height - textBox.padding), 50, true};
     textIndex.configure(conf);
 
     // Configure and run text index
     xEventGroupSetBits(bookEventGroup, BIT1);
     String textIndexDirPath = textIndex.index(bookPath);
-    const char *textIndexDirPathC = textIndexDirPath.c_str();
-    Serial.printf("-- Index Generated! Dir: %s --\n", textIndexDirPathC);
+
+    // Copy path to intent local variabe
+    strlcpy(bookIndexPath, textIndexDirPath.c_str(), sizeof(bookIndexPath));
+
+    Serial.printf("-- Index Generated! Dir: %s --\n", bookIndexPath);
     xEventGroupSetBits(bookEventGroup, BIT2);
 
     // Check if directory index exists
@@ -23,12 +26,12 @@ void IntentBook::bookLoadingTask()
     DirectoryCache directoryCahe(fileManager);
 
     DirectoryCache::Model dirCacheModel;
-    bool hasDirCache = directoryCahe.read(textIndexDirPathC, dirCacheModel);
+    bool hasDirCache = directoryCahe.read(bookIndexPath, dirCacheModel);
 
     if (!hasDirCache)
     {
         Set<FileIndex> fileIndex(1024);
-        fileManager.indexDirectory(textIndexDirPathC, DirIndexConf::FIRST_FILE, fileIndex);
+        fileManager.indexDirectory(bookIndexPath, DirIndexConf::NO_DIR, fileIndex);
 
         if (fileIndex.size() == 0)
         {
@@ -49,7 +52,7 @@ void IntentBook::bookLoadingTask()
             sizeof(dirCacheModel.curFileNme) // <- destination's capacity
         );
 
-        bool writeResult = directoryCahe.write(textIndexDirPathC, dirCacheModel);
+        bool writeResult = directoryCahe.write(bookIndexPath, dirCacheModel);
         if (!writeResult)
         {
             Serial.println("Failed to write directory cache");
@@ -168,6 +171,7 @@ void IntentBook::bookDiaplayTask()
         }
     }
 
+    // delete widgetText;
     vTaskDelete(NULL);
 }
 
@@ -206,8 +210,48 @@ ActionResult IntentBook::onAction(ActionArgument arg)
         return {ActionRetultType::CHANGE_INTENT, INTENT_ID_HOME, IntentArgument::NO_ARG};
     }
 
-    // TODO: Implemet loading, implement next page / previous page
+    // Handle page change
+    if (arg.actionBit == BUTTON_ACTION_UP || arg.actionBit == BUTTON_ACTION_DOWN) {
 
+        Serial.printf("Opening next page for cached book: %s\n", bookPath);
+
+        // TODO: Injet as a dependency?
+        DirectoryCache directoryCahe(fileManager);
+
+        DirectoryCache::Model cacheModel;
+        bool result = directoryCahe.read(bookIndexPath, cacheModel);
+
+        if (!result) {
+            Serial.println("Error opening page");
+        }
+
+        // TODO: Hande max and min page nums 
+        uint16_t pageNum = cacheModel.curFileIdx;
+        pageNum++;
+
+        String pagePath = String(bookIndexPath) +  "/._" + String(pageNum) + ".page.txt";
+        const char* pagePathC = pagePath.c_str();
+        Serial.printf("Next page path: %s\n", pagePathC);
+
+        // TODO: Resut ignored
+        fileManager.readFileToBuffer(pagePathC, bookPage, PAGE_BUFFER_SIZE);
+        ModelText modelTextObj = {textBox, TOP_LEFT, bookPage};
+
+        Serial.println("Printing page...");
+
+        // TODO: --------- Why lock is not asquired?? ---------
+        // xSemaphoreTake(displaySemaphoreHandle, portMAX_DELAY);
+        Serial.println("Lock asquired");
+        widgetText->upgrade(modelTextObj);
+        // xSemaphoreGive(displaySemaphoreHandle);
+
+        // Save last opened page
+        cacheModel.curFileIdx = pageNum;
+        bool writeResult = directoryCahe.write(bookIndexPath, cacheModel);
+    }
+
+
+    // Implement next page / previous page
     return ActionResult::VOID;
 }
 
